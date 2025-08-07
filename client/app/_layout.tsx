@@ -29,6 +29,7 @@ export default function RootLayout() {
             <Stack>
               <Stack.Screen name="index" options={{ headerShown: false }} />
               <Stack.Screen name="SamplePage" options={{ headerShown: false }} />
+              <Stack.Screen name="DiningPage" options={{ headerShown: false }} />
             </Stack>
           </CalendarProvider>
         </DishListProvider>
