@@ -16,7 +16,7 @@ export default function MainPageSelector({
   scale = 1,
   mainButtonFunction,
 }: Props) {
-  const navigation = useNavigation<Nav>(); // <- gets navigation from context
+  const navigation = useNavigation<Nav>();
   const [menuVisible, setMenuVisible] = useState(false);
 
   return (
@@ -38,7 +38,10 @@ export default function MainPageSelector({
             <View className="relative w-full h-full">
               <Pressable
                 className="absolute left-[70px] -translate-x-1/2 bottom-0 w-[70px] h-[70px] bg-white rounded-full shadow items-center justify-center"
-                onPress={() => setMenuVisible(false)}
+                onPress={() => {
+                  navigation.navigate("HomePage");
+                  setMenuVisible(false);
+                }}
               >
                 <Text>🏠</Text>
               </Pressable>

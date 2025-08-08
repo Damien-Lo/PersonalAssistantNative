@@ -1,13 +1,23 @@
 import React, { createContext, useState, useEffect } from "react";
 
-// ----- Types -----
+//=================================================================
+//              INTERFACES AND TYPES
+//=================================================================
 export interface Ingredient {
   _id: string;
   name: string;
-  brand?: string;
-  category?: string;
+  description: string;
+  category: string;
+  expiryDate: Date;
+  brand: string;
   portionsAvaliable: number;
-  portionUnit?: string;
+  portionUnit: string;
+  calroies: number;
+  protein: number;
+  carbs: number;
+  fats: number;
+  fier: number;
+  sodium: number;
 }
 
 export type NewIngredient = Omit<Ingredient, "_id">;
@@ -23,12 +33,16 @@ interface IngredientListContextType {
   deleteIngredient: (id: string) => Promise<void>;
 }
 
-// ----- Context -----
+//=================================================================
+//              CONTEXTS
+//=================================================================
 export const IngredientListContext = createContext<IngredientListContextType>(
   {} as IngredientListContextType
 );
 
-// ----- Provider -----
+//=================================================================
+//              PROVIDER
+//=================================================================
 export const IngredientListProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {

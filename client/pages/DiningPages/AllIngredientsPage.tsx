@@ -104,6 +104,8 @@ export default function AllIngredientsPage() {
             className="mt-4 bg-blue-500 px-4 py-2 rounded-lg"
             onPress={() => {
               console.log(fullIngredientList);
+              console.log("\n");
+              console.log(fullIngredientList[0]);
             }}
           >
             <Text className="text-white text-center text-lg font-medium">
