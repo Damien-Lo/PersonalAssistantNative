@@ -23,7 +23,8 @@ import {
 import CreatableSelector from "../../components/HomeComponents/CreatableSelector";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-interface NewIngredientPageProps {
+interface EditIngredientPageProps {
+  passedIngredient: Ingredient;
   passedCloseOverlay: () => void;
 }
 
@@ -31,7 +32,8 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 type IngredientByCategory = Record<string, Ingredient[]>;
 
-const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
+const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
+  passedIngredient,
   passedCloseOverlay,
 }) => {
   //=====================================
@@ -49,21 +51,37 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
 
   //STATE VARIABLES
   //Dish Object Variables
-  const [ingredientName, setIngredientName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [category, setCategory] = useState<string | null>("");
-  const [expiryDate, setExpiryDate] = useState<Date | null>(null);
-  const [brand, setBrand] = useState<string>("Generic");
-  const [portionsAvaliable, setPortionsAvaliable] = useState<string | null>(
-    null
+  const [ingredientName, setIngredientName] = useState<string>(
+    passedIngredient.name
   );
-  const [portionUnit, setPortionUnit] = useState<string>("g");
-  const [calories, setCalories] = useState<string>("");
-  const [protein, setProtein] = useState<string>("");
-  const [carbs, setCarbs] = useState<string>("");
-  const [fats, setFats] = useState<string>("");
-  const [fiber, setFiber] = useState<string>("");
-  const [sodium, setSodium] = useState<string>("");
+  const [description, setDescription] = useState<string>(
+    passedIngredient.description
+  );
+  const [category, setCategory] = useState<string | null>(
+    passedIngredient.category
+  );
+  const [expiryDate, setExpiryDate] = useState<Date | null>(
+    passedIngredient.expiryDate ? new Date(passedIngredient.expiryDate) : null
+  );
+  const [brand, setBrand] = useState<string>(passedIngredient.brand);
+  const [portionsAvaliable, setPortionsAvaliable] = useState<string | null>(
+    passedIngredient.portionsAvaliable
+      ? String(passedIngredient.portionsAvaliable)
+      : null
+  );
+  const [portionUnit, setPortionUnit] = useState<string>(
+    passedIngredient.portionUnit ? passedIngredient.portionUnit : ""
+  );
+  const [calories, setCalories] = useState<string>(
+    String(passedIngredient.calories)
+  );
+  const [protein, setProtein] = useState<string>(
+    String(passedIngredient.protein)
+  );
+  const [carbs, setCarbs] = useState<string>(String(passedIngredient.carbs));
+  const [fats, setFats] = useState<string>(String(passedIngredient.fats));
+  const [fiber, setFiber] = useState<string>(String(passedIngredient.fiber));
+  const [sodium, setSodium] = useState<string>(String(passedIngredient.sodium));
 
   //Supporting Variables
   const navigation = useNavigation<Nav>();
@@ -74,8 +92,12 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
   const [knownCategories, setKnwonCategories] = useState<Set<string>>(
     new Set()
   );
-  const [showDatePicker, setShowDatePicker] = useState<boolean>(true);
-  const [latestSetDate, setLatestSetDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(
+    expiryDate === null ? false : true
+  );
+  const [latestSetDate, setLatestSetDate] = useState<Date>(
+    expiryDate === null ? new Date() : new Date(expiryDate)
+  );
 
   //=====================================
   //              FUNCTIONS
@@ -100,7 +122,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
     // };
 
     // console.log(newIngredient);
-    console.log(expiryDate);
+    console.log(portionUnit);
   };
 
   //Navigate Functions
@@ -157,7 +179,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
 
     console.log("Saving Ingredient:", newIngredient);
 
-    createIngredient(newIngredient);
+    editIngredient(passedIngredient._id, newIngredient);
   };
 
   //=====================================
@@ -194,7 +216,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
               <Text className="text-red-500">Cancel</Text>
             </Pressable>
             <Text className="text-xl font-bold text-center">
-              New Ingredients Page
+              Edit Ingredients Page
             </Text>
             <Pressable
               className="flex items-center justify-center"
@@ -414,4 +436,4 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
   );
 };
 
-export default NewIngredientPage;
+export default EditIngredientPage;

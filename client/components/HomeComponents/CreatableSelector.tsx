@@ -27,7 +27,7 @@ export default function CreatableSelector({
   disabled = false,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(value ? value : "");
 
   const normalized = useMemo(() => options.map((o) => o.trim()), [options]);
 

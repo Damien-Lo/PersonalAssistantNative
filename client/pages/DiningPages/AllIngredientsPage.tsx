@@ -16,6 +16,7 @@ import {
 } from "../../contexts/IngredientListContext";
 import NewIngredientPage from "./NewIngredientPage";
 import SearchBar from "../../components/HomeComponents/SearchBar";
+import EditIngredientPage from "./EditIngredientPage";
 
 export default function AllIngredientsPage() {
   const navigator = useNavigation();
@@ -250,9 +251,31 @@ export default function AllIngredientsPage() {
         {/* Sheet content */}
         <View className="absolute bottom-0 left-[2.5%] right-0 h-[90%] w-[95%] bg-white rounded-t-2xl p-4">
           <NewIngredientPage
-            passedName=""
             passedCloseOverlay={() => setShowNewIngredientOverlay(false)}
           />
+        </View>
+      </Modal>
+
+      <Modal
+        visible={selectedIngredient != null}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedIngredient(null)}
+      >
+        {/* Backdrop */}
+        <Pressable
+          className="flex-1 bg-black/40"
+          onPress={() => setSelectedIngredient(null)}
+        />
+
+        {/* Sheet content */}
+        <View className="absolute bottom-0 left-[2.5%] right-0 h-[90%] w-[95%] bg-white rounded-t-2xl p-4">
+          {selectedIngredient && (
+            <EditIngredientPage
+              passedIngredient={selectedIngredient}
+              passedCloseOverlay={() => setSelectedIngredient(null)}
+            />
+          )}
         </View>
       </Modal>
     </SafeAreaView>
