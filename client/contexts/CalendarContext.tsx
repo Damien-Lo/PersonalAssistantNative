@@ -107,7 +107,7 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
   useEffect(() => {
     const fetchCalendarEvents = async () => {
       try {
-        const res = await fetch("http://localhost:4000/api/calendarEvents");
+        const res = await fetch("http://192.168.1.83:4000/api/calendarEvents");
         const data = await res.json();
         setFullEventList(data);
       } catch (error) {
@@ -129,7 +129,7 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
   const createCalendarEvent = async (newEvent: NewCalendarEvent) => {
     console.log("Create Event Triggered");
     try {
-      const res = await fetch("http://localhost:4000/api/calendarEvents", {
+      const res = await fetch("http://192.168.1.83:4000/api/calendarEvents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEvent),
@@ -171,7 +171,7 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
 
     try {
       const res = await fetch(
-        `http://localhost:4000/api/calendarEvents/${id}`,
+        `http://192.168.1.83:4000/api/calendarEvents/${id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -194,7 +194,7 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
    */
   const deleteCalendarEvent = async (id: string) => {
     try {
-      await fetch(`http://localhost:4000/api/calendarEvents/${id}`, {
+      await fetch(`http://192.168.1.83:4000/api/calendarEvents/${id}`, {
         method: "DELETE",
       });
       setFullEventList((prev) => prev.filter((event) => event._id !== id));
@@ -242,7 +242,10 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
 
           const updatedIngredient = {
             ...ingredient,
-            portionsAvaliable: ingredient.portionsAvaliable - ing_dict.amount,
+            portionsAvaliable:
+              ingredient.portionsAvaliable === null
+                ? null
+                : ingredient.portionsAvaliable - ing_dict.amount,
           };
 
           editIngredient(ingredient._id, updatedIngredient);

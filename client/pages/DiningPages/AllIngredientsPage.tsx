@@ -206,7 +206,12 @@ export default function AllIngredientsPage() {
             <Text className="text-lg flex-1">{item.name}</Text>
 
             <View className="flex flex-row w-[140px] items-center justify-between">
-              <Pressable className="w-[30px] h-[30px] items-center justify-center bg-gray-300 rounded-xl">
+              <Pressable
+                className="w-[30px] h-[30px] items-center justify-center bg-gray-300 rounded-xl"
+                onPress={() => {
+                  itrIngredientCount(item, -1);
+                }}
+              >
                 <Text>-</Text>
               </Pressable>
 
@@ -215,7 +220,12 @@ export default function AllIngredientsPage() {
                 {item.portionUnit ?? ""}
               </Text>
 
-              <Pressable className="w-[30px] h-[30px] items-center justify-center bg-gray-300 rounded-xl">
+              <Pressable
+                className="w-[30px] h-[30px] items-center justify-center bg-gray-300 rounded-xl"
+                onPress={() => {
+                  itrIngredientCount(item, 1);
+                }}
+              >
                 <Text>+</Text>
               </Pressable>
             </View>

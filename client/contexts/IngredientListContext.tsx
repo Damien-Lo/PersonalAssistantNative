@@ -77,7 +77,7 @@ export const IngredientListProvider: React.FC<React.PropsWithChildren> = ({
     newIngredient: NewIngredient
   ): Promise<void> => {
     try {
-      const res = await fetch("http://localhost:4000/api/ingredients", {
+      const res = await fetch("http://192.168.1.83:4000/api/ingredients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newIngredient),
@@ -98,11 +98,14 @@ export const IngredientListProvider: React.FC<React.PropsWithChildren> = ({
     updatedFields: Partial<Ingredient>
   ): Promise<void> => {
     try {
-      const res = await fetch(`http://localhost:4000/api/ingredients/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedFields),
-      });
+      const res = await fetch(
+        `http://192.168.1.83:4000/api/ingredients/${id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedFields),
+        }
+      );
       const updatedIngredient: Ingredient = await res.json();
       setFullIngredientList((prev) =>
         prev.map((ing) => (ing._id === id ? updatedIngredient : ing))
@@ -118,7 +121,7 @@ export const IngredientListProvider: React.FC<React.PropsWithChildren> = ({
    */
   const deleteIngredient = async (id: string): Promise<void> => {
     try {
-      await fetch(`http://localhost:4000/api/ingredients/${id}`, {
+      await fetch(`http://192.168.1.83:4000/api/ingredients/${id}`, {
         method: "DELETE",
       });
       setFullIngredientList((prev) => prev.filter((ing) => ing._id !== id));

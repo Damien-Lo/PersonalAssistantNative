@@ -12,7 +12,16 @@ import {
   SafeAreaFrameContext,
   SafeAreaView,
 } from "react-native-safe-area-context";
-import { Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import CreatableSelector from "../../components/HomeComponents/CreatableSelector";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 interface NewIngredientPageProps {
   passedName: string;
@@ -52,13 +61,13 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
   const [portionsAvaliable, setPortionsAvaliable] = useState<string | null>(
     null
   );
-  const [portionUnit, setPortionUnit] = useState<string | null>("g");
-  const [calories, setCalories] = useState<number | null>(null);
-  const [protein, setProtein] = useState<number | null>(null);
-  const [carbs, setCarbs] = useState<number | null>(null);
-  const [fats, setFats] = useState<number | null>(null);
-  const [fiber, setFiber] = useState<number | null>(null);
-  const [sodium, setSodium] = useState<number | null>(null);
+  const [portionUnit, setPortionUnit] = useState<string>("g");
+  const [calories, setCalories] = useState<string>("");
+  const [protein, setProtein] = useState<string>("");
+  const [carbs, setCarbs] = useState<string>("");
+  const [fats, setFats] = useState<string>("");
+  const [fiber, setFiber] = useState<string>("");
+  const [sodium, setSodium] = useState<string>("");
 
   //Supporting Variables
   const navigation = useNavigation<Nav>();
@@ -66,13 +75,36 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
     useState<IngredientByCategory>({});
   const [unitTypes, setUnitTypes] = useState<Set<string>>(new Set());
   const [knownBrands, setKnownBrands] = useState<Set<string>>(new Set());
+  const [knownCategories, setKnwonCategories] = useState<Set<string>>(
+    new Set()
+  );
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(true);
+  const [latestSetDate, setLatestSetDate] = useState<Date>(new Date());
 
   //=====================================
   //              FUNCTIONS
   //=====================================
 
   const testFunc = () => {
-    console.log(knownBrands);
+    // const newIngredient: NewIngredient = {
+    //   name: ingredientName,
+    //   description: description,
+    //   category: category === null ? "Uncategorised" : category,
+    //   expiryDate: expiryDate ? new Date(expiryDate) : null,
+    //   brand: brand === null ? "Generic" : brand,
+    //   portionsAvaliable:
+    //     portionsAvaliable === null ? null : Number(portionsAvaliable),
+    //   portionUnit: portionUnit,
+    //   calories: isNaN(Number(calories)) ? 0 : Number(calories),
+    //   protein: isNaN(Number(protein)) ? 0 : Number(protein),
+    //   carbs: isNaN(Number(carbs)) ? 0 : Number(carbs),
+    //   fats: isNaN(Number(fats)) ? 0 : Number(fats),
+    //   fiber: isNaN(Number(fiber)) ? 0 : Number(fiber),
+    //   sodium: isNaN(Number(sodium)) ? 0 : Number(sodium),
+    // };
+
+    // console.log(newIngredient);
+    console.log(expiryDate);
   };
 
   //Navigate Functions
@@ -85,11 +117,13 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
     // Group data by category
     const unitsSet: Set<string> = new Set();
     const brandsSet: Set<string> = new Set();
+    const categoriesSet: Set<string> = new Set();
     const grouped = fullIngredientList.reduce<IngredientByCategory>(
       (acc, item) => {
         item.portionUnit == null ? null : unitsSet.add(item.portionUnit);
         brandsSet.add(item.brand);
         const cat: string = item.category ?? "Uncategorized";
+        categoriesSet.add(cat);
         (acc[cat] ??= []).push(item);
         return acc;
       },
@@ -99,6 +133,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
     setCategorisedIngredientDict(grouped);
     setUnitTypes(unitsSet);
     setKnownBrands(brandsSet);
+    setKnwonCategories(categoriesSet);
   }, []);
 
   /**
@@ -116,27 +151,17 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
       portionsAvaliable:
         portionsAvaliable === null ? null : Number(portionsAvaliable),
       portionUnit: portionUnit,
-      calories: calories === null ? 0 : Number(calories),
-      protein: protein === null ? 0 : Number(protein),
-      carbs: carbs === null ? 0 : Number(carbs),
-      fats: fats === null ? 0 : Number(fats),
-      fiber: fiber === null ? 0 : Number(fiber),
-      sodium: sodium === null ? 0 : Number(sodium),
+      calories: isNaN(Number(calories)) ? 0 : Number(calories),
+      protein: isNaN(Number(protein)) ? 0 : Number(protein),
+      carbs: isNaN(Number(carbs)) ? 0 : Number(carbs),
+      fats: isNaN(Number(fats)) ? 0 : Number(fats),
+      fiber: isNaN(Number(fiber)) ? 0 : Number(fiber),
+      sodium: isNaN(Number(sodium)) ? 0 : Number(sodium),
     };
 
     console.log("Saving Ingredient:", newIngredient);
 
     createIngredient(newIngredient);
-
-    navigateBack();
-  };
-
-  const navigateBack = () => {
-    if (passedCloseOverlay) {
-      passedCloseOverlay();
-    } else {
-      navigation.navigate("AllIngredientsPage");
-    }
   };
 
   //=====================================
@@ -145,10 +170,250 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 p-4">
-        <Text className="text-xl font-bold mb-4">New Ingredients Page</Text>
-        {/* form content goes here */}
-      </View>
+      <ScrollView>
+        <View className="flex-1 p-2">
+          {/* Header Bar */}
+          <View className="flex flex-row justify-between items-center mb-6">
+            <Pressable
+              className="flex items-center justify-center pr-4"
+              onPress={() => {
+                console.log("Test");
+              }}
+            >
+              <Text
+                className="text-red-500"
+                onPress={() => {
+                  testFunc();
+                }}
+              >
+                Test
+              </Text>
+            </Pressable>
+            <Pressable
+              className="flex items-center justify-center"
+              onPress={() => {
+                passedCloseOverlay();
+              }}
+            >
+              <Text className="text-red-500">Cancel</Text>
+            </Pressable>
+            <Text className="text-xl font-bold text-center">
+              New Ingredients Page
+            </Text>
+            <Pressable
+              className="flex items-center justify-center"
+              onPress={() => {
+                handleSave();
+                passedCloseOverlay();
+              }}
+            >
+              <Text className="text-blue-500 ">Save</Text>
+            </Pressable>
+          </View>
+
+          {/* Ingredient Name */}
+          <View className="mb-4">
+            <Text className="text-xl font-bold mb-2">Ingredient Name</Text>
+            <TextInput
+              className="border h-[40px] pl-4 rounded-xl"
+              placeholder="Input the Ingredient name"
+              value={ingredientName}
+              onChangeText={(value) => {
+                setIngredientName(value);
+              }}
+            />
+          </View>
+
+          {/* Description */}
+          <View className="mb-4">
+            <Text className="text-xl font-bold mb-2">Description</Text>
+            <TextInput
+              className="border h-[100px] pl-4 pt-4 rounded-xl"
+              placeholder="Add a Description"
+              value={description}
+              multiline={true}
+              onChangeText={(value) => {
+                setDescription(value);
+              }}
+            ></TextInput>
+          </View>
+
+          {/* Brand */}
+          <View className="mb-4">
+            <Text className="text-xl font-bold mb-2">Brand</Text>
+            <View className="">
+              <CreatableSelector
+                options={Array.from(knownBrands)}
+                value={brand}
+                onSelect={(v) => setBrand(v)}
+                onCreate={(v) => {
+                  setKnownBrands((prev) => new Set(prev).add(v));
+                }}
+                placeholder="Select or type a brand"
+              />
+            </View>
+          </View>
+
+          {/* Category */}
+          <View className="mb-4">
+            <Text className="text-xl font-bold mb-2">Category</Text>
+            <View className="">
+              <CreatableSelector
+                options={Array.from(knownCategories)}
+                value={category}
+                onSelect={(v) => setCategory(v)}
+                onCreate={(v) => {
+                  setKnownBrands((prev) => new Set(prev).add(v));
+                }}
+                placeholder="Select or type a brand"
+              />
+            </View>
+          </View>
+
+          {/* Portions Avaliable */}
+          <View className="mb-4">
+            <Text className="text-xl font-bold mb-2">Portions Available</Text>
+
+            <View className="flex flex-row items-center h-[50px]">
+              <TextInput
+                className="border h-full w-[240px] mr-4 pl-2"
+                placeholder=""
+                keyboardType="decimal-pad"
+                value={portionsAvaliable ? portionsAvaliable : ""}
+                onChangeText={(value) => {
+                  setPortionsAvaliable(value === "" ? null : value);
+                }}
+              />
+
+              <View className="h-full w-[120px]">
+                <CreatableSelector
+                  options={[...unitTypes]}
+                  value={portionUnit}
+                  onSelect={setPortionUnit}
+                  onCreate={() => setPortionUnit("")}
+                  placeholder="Unit"
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Expiry Date */}
+          <View className="mb-4 flex flex-row items-center h-[60px]">
+            <Text className="text-xl font-bold">Expiry Date</Text>
+            <View className="pl-4">
+              {showDatePicker && (
+                <DateTimePicker
+                  value={expiryDate ?? new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      setExpiryDate(selectedDate);
+                      setLatestSetDate(selectedDate);
+                    }
+                  }}
+                />
+              )}
+            </View>
+            <Switch
+              className="absolute right-0"
+              value={showDatePicker}
+              onValueChange={() => {
+                if (showDatePicker) {
+                  setExpiryDate(null);
+                } else {
+                  setExpiryDate(latestSetDate);
+                }
+                setShowDatePicker(!showDatePicker);
+              }}
+            ></Switch>
+          </View>
+
+          {/* Nutrition Information */}
+          <View className="mb-4">
+            <Text className="text-xl font-bold mb-2">
+              Nutrition Info Per Portion
+            </Text>
+            <View className="space-y-4">
+              {/* Row 1 */}
+              <View className="flex flex-row justify-between mb-3">
+                <View className="w-[30%]">
+                  <Text className="text-lg">Calories</Text>
+                  <TextInput
+                    className="border w-full h-[40px] rounded px-2"
+                    keyboardType="decimal-pad"
+                    value={calories}
+                    onChangeText={(value) => {
+                      setCalories(value);
+                    }}
+                  />
+                </View>
+                <View className="w-[30%]">
+                  <Text className="text-lg">Protein (g)</Text>
+                  <TextInput
+                    className="border w-full h-[40px] rounded px-2"
+                    keyboardType="decimal-pad"
+                    value={protein}
+                    onChangeText={(value) => {
+                      setProtein(value);
+                    }}
+                  />
+                </View>
+                <View className="w-[30%]">
+                  <Text className="text-lg">Carbs (g)</Text>
+                  <TextInput
+                    className="border w-full h-[40px] rounded px-2"
+                    keyboardType="decimal-pad"
+                    value={carbs}
+                    onChangeText={(value) => {
+                      setCarbs(value);
+                    }}
+                  />
+                </View>
+              </View>
+
+              {/* Row 2 */}
+              <View className="flex flex-row justify-between">
+                <View className="w-[30%]">
+                  <Text className="text-lg">Fats (g)</Text>
+                  <TextInput
+                    className="border w-full h-[40px] rounded px-2"
+                    keyboardType="decimal-pad"
+                    value={fats}
+                    onChangeText={(value) => {
+                      setFats(value);
+                    }}
+                  />
+                </View>
+                <View className="w-[30%]">
+                  <Text className="text-lg">Fiber (g)</Text>
+                  <TextInput
+                    className="border w-full h-[40px] rounded px-2"
+                    keyboardType="decimal-pad"
+                    value={fiber}
+                    onChangeText={(value) => {
+                      setFiber(value);
+                    }}
+                  />
+                </View>
+                <View className="w-[30%]">
+                  <Text className="text-lg">Sodium (mg)</Text>
+                  <TextInput
+                    className="border w-full h-[40px] rounded px-2"
+                    keyboardType="decimal-pad"
+                    value={sodium}
+                    onChangeText={(value) => {
+                      setSodium(value);
+                    }}
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+          {/* Buffer Space */}
+          {true && <View className="w-full h-[300px]"></View>}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

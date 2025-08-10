@@ -8,8 +8,7 @@ const ingredientSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
-    default: "",
+    required: false,
   },
   category: {
     type: String,
@@ -18,8 +17,7 @@ const ingredientSchema = new mongoose.Schema({
   },
   expiryDate: {
     type: Date,
-    required: true,
-    default: null,
+    required: false,
   },
   brand: {
     type: String,
@@ -28,7 +26,7 @@ const ingredientSchema = new mongoose.Schema({
   },
   portionsAvaliable: {
     type: Number,
-    required: true,
+    required: false,
     default: null,
   },
   portionUnit: {
