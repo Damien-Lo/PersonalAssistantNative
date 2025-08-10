@@ -1,20 +1,72 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const ingredientSchema = new mongoose.Schema({
-    name: String,
-    description: String,
-    category: String,
-    expiryDate: Date,     // Change to Date Later
-    brand: String,
-    portionsAvaliable: Number,          //Need Someway to specify portion type
-    portionUnit: String,
-    calories: Number,
-    protein: Number,
-    carbs: Number,
-    fats: Number,
-    fiber: Number,
-    sodium: Number
-    // Perhaps Add other metric besides vitamins....
-})
+  name: {
+    type: String,
+    required: true,
+    default: "Unnamed Ingredient",
+  },
+  description: {
+    type: String,
+    required: true,
+    default: "",
+  },
+  category: {
+    type: String,
+    required: true,
+    default: "Uncategorised",
+  },
+  expiryDate: {
+    type: Date,
+    required: true,
+    default: null,
+  },
+  brand: {
+    type: String,
+    required: true,
+    default: "Generic",
+  },
+  portionsAvaliable: {
+    type: Number,
+    required: true,
+    default: null,
+  },
+  portionUnit: {
+    type: String,
+    required: true,
+    default: null,
+  },
+  calories: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  protein: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  carbs: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  fats: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  fiber: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  sodium: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  // Perhaps Add other metric besides vitamins....
+});
 
-module.exports = mongoose.model('Ingredient', ingredientSchema);
+module.exports = mongoose.model("Ingredient", ingredientSchema);

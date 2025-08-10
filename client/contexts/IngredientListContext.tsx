@@ -8,15 +8,15 @@ export interface Ingredient {
   name: string;
   description: string;
   category: string;
-  expiryDate: Date;
+  expiryDate: Date | null;
   brand: string;
-  portionsAvaliable: number;
-  portionUnit: string;
-  calroies: number;
+  portionsAvaliable: number | null;
+  portionUnit: string | null;
+  calories: number;
   protein: number;
   carbs: number;
   fats: number;
-  fier: number;
+  fiber: number;
   sodium: number;
 }
 
@@ -59,7 +59,7 @@ export const IngredientListProvider: React.FC<React.PropsWithChildren> = ({
   useEffect(() => {
     const fetchIngredients = async () => {
       try {
-        const res = await fetch("http://localhost:4000/api/ingredients");
+        const res = await fetch("http://192.168.1.83:4000/api/ingredients");
         const data: Ingredient[] = await res.json();
         setFullIngredientList(data);
       } catch (error) {
