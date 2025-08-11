@@ -1,5 +1,12 @@
 // components/CreatableSelector.tsx
-import React, { useMemo, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   View,
   Text,
@@ -10,118 +17,90 @@ import {
 } from "react-native";
 
 type Props = {
-  options: string[];
-  value: string | null;
-  onSelect: (value: string) => void;
-  onCreate: (value: string) => void;
+  options: { label: string; value: any }[];
+  valueToSet: any | null;
+  setValueFunc: Dispatch<SetStateAction<any>>;
   placeholder?: string;
-  disabled?: boolean;
 };
 
 export default function CreatableSelector({
   options,
-  value,
-  onSelect,
-  onCreate,
+  valueToSet,
+  setValueFunc,
   placeholder = "Select or type…",
-  disabled = false,
 }: Props) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState(value ? value : "");
+  const textRef = useRef<TextInput>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [selectedDataLabel, setSelectedDataLabel] = useState<string>("");
 
-  const normalized = useMemo(() => options.map((o) => o.trim()), [options]);
+  const [query, setQuery] = useState<string>("");
+  const [filteredOptions, setFilteredOptions] = useState<
+    { label: string; value: any }[]
+  >([]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return normalized;
-    return normalized.filter((o) => o.toLowerCase().includes(q));
-  }, [normalized, query]);
-
-  const exactMatch = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return q.length > 0 && normalized.some((o) => o.toLowerCase() === q);
-  }, [normalized, query]);
-
-  const showCreate = query.trim().length > 0 && !exactMatch;
-
-  const pick = (v: string) => {
-    onSelect(v);
-    setQuery(v);
-    setOpen(false);
-    Keyboard.dismiss();
-  };
-
-  const create = () => {
-    const v = query.trim();
-    if (!v) return;
-    onCreate(v);
-    onSelect(v);
-    setOpen(false);
-    Keyboard.dismiss();
-  };
-
-  const displayText = query.length > 0 ? query : "";
+  useEffect(() => {
+    if (query === "") {
+      setFilteredOptions(options);
+    } else {
+      const matches = options.filter((item) =>
+        item.label.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredOptions(matches);
+    }
+  }, [query]);
 
   return (
-    <View className="relative bg-white w-full">
-      {/* Input */}
-      <Pressable
-        className={`border rounded-xl px-3 h-[50px] justify-center ${disabled ? "opacity-50" : ""}`}
-        onPress={() => !disabled && setOpen(true)}
-      >
+    <View className="relative bg-white w-full border h-full rounded-lg">
+      {/* Text Input Field */}
+      <View className="w-full h-full flex flex-row rounded-lg">
         <TextInput
-          editable={!disabled}
-          value={displayText}
+          ref={textRef}
+          className="p-2 text-lg w-[85%] bg-blue-200 h-full"
+          value={query}
           placeholder={placeholder}
-          onFocus={() => setOpen(true)}
-          onChangeText={(t) => {
-            setQuery(t);
-            if (!open) setOpen(true);
+          onFocus={() => {
+            setIsFocused(true);
+            setFilteredOptions(options);
           }}
-          className="text-base h-full"
-          style={{
-            textAlignVertical: "center", // centers vertically on Android
-            paddingVertical: 0, // prevents extra top/bottom padding
+          onBlur={() => {
+            setIsFocused(false);
           }}
-        />
-      </Pressable>
-
-      {/* Backdrop to close dropdown */}
-      {open && (
+          onChangeText={(e) => {
+            setSelectedDataLabel(e);
+            setQuery(e);
+            setValueFunc(e);
+          }}
+        ></TextInput>
         <Pressable
-          className="absolute -left-5 -right-5 -top-5 -bottom-5"
-          onPress={() => setOpen(false)}
-        />
-      )}
+          className="bg-red-200 right-0 absolute w-[15%] h-[100%] rounded-lg items-center justify-center border"
+          onPress={() => {
+            textRef.current?.blur();
+          }}
+        >
+          <Text>✓</Text>
+        </Pressable>
+      </View>
 
-      {/* Dropdown panel */}
-      {open && (
+      {isFocused && (
         <View
-          className="absolute left-0 right-0 top-[48px] bg-white border rounded-xl shadow max-h-[220px] overflow-hidden"
+          className="bg-white w-full h-[200px] border"
           style={{ zIndex: 999, elevation: 10 }}
         >
           <FlatList
-            data={filtered}
-            keyExtractor={(item) => item}
-            keyboardShouldPersistTaps="handled"
+            data={filteredOptions}
             renderItem={({ item }) => (
               <Pressable
-                onPress={() => pick(item)}
-                className="px-3 py-2 active:bg-gray-100"
+                onPress={() => {
+                  setValueFunc(item.value);
+                  setQuery(item.label);
+                  textRef.current?.blur();
+                }}
+                style={{ paddingVertical: 10, paddingHorizontal: 14 }}
               >
-                <Text>{item}</Text>
+                <Text>{item.label}</Text>
               </Pressable>
             )}
-            ListFooterComponent={
-              showCreate ? (
-                <Pressable
-                  onPress={create}
-                  className="px-3 py-3 border-t bg-gray-50 active:bg-gray-100"
-                >
-                  <Text className="font-semibold">+ Add “{query.trim()}”</Text>
-                </Pressable>
-              ) : null
-            }
+            keyExtractor={(item, index) => index.toString()}
           />
         </View>
       )}

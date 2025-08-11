@@ -1,29 +1,71 @@
 const mongoose = require("mongoose");
 
 const dishSchema = new mongoose.Schema({
-  name: String,
-  description: String,
-  meals: [String],
-  category: String,
-  ingredientsList: [
-    {
-      ingredientObject: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Ingredient",
+  name: {
+    type: String,
+    required: true,
+    default: "Unnamed Dish",
+  },
+  description: {
+    type: String,
+    required: false,
+  },
+  category: {
+    type: String,
+    required: true,
+    default: "Uncategorised",
+  },
+  meals: {
+    type: [String],
+    required: true,
+    default: [],
+  },
+  ingredientsList: {
+    type: [
+      {
+        ingredientObject: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Ingredient",
+        },
+        amount: Number,
       },
-      amount: Number,
-    },
-  ],
-  recipe: String,
-  restaurant: String,
+    ],
+    required: true,
+    default: [],
+  },
+  recipe: {
+    type: String,
+    required: false,
+  },
+  restaurant: {
+    type: String,
+    required: false,
+  },
+  calories: {
+    type: Number,
+    required: false,
+  },
+  protein: {
+    type: Number,
+    required: false,
+  },
+  carbs: {
+    type: Number,
+    required: false,
+  },
 
-  calories: Number,
-  protein: Number,
-  carbs: Number,
-  fats: Number,
-  fiber: Number,
-  sodium: Number,
-  // Perhaps Add other metric besides vitamins....
+  fats: {
+    type: Number,
+    required: false,
+  },
+  fiber: {
+    type: Number,
+    required: false,
+  },
+  sodium: {
+    type: Number,
+    required: false,
+  },
 });
 
 module.exports = mongoose.model("Dish", dishSchema);

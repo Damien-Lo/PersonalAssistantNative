@@ -17,15 +17,17 @@ import {
 import NewIngredientPage from "./NewIngredientPage";
 import SearchBar from "../../components/HomeComponents/SearchBar";
 import EditIngredientPage from "./EditIngredientPage";
+import { Dish, DishListContext } from "../../contexts/DishListContext";
+import NewDishPage from "./NewDishPage";
 
-export default function AllIngredientsPage() {
+export default function AllDishesPage() {
   const navigator = useNavigation();
 
   //=====================================
   //              VARIABLES
   //=====================================
 
-  type IngredientByCategory = Record<string, Ingredient[]>;
+  type DishByCategory = Record<string, Dish[]>;
 
   //CONTEXTS
   const {
@@ -36,28 +38,29 @@ export default function AllIngredientsPage() {
     deleteIngredient,
   } = useContext(IngredientListContext);
 
+  const { fullDishList, setFullDishList, createDish, editDish, deleteDish } =
+    useContext(DishListContext);
+
   //SUPPORTING VARIABLES
-  const [categorisedIngredientDict, setCategorisedIngredientDict] =
-    useState<IngredientByCategory>({});
-  const [ingredientSectionListData, setIngredientSectionListData] = useState<
-    { title: string; data: Ingredient[] }[]
+  const [categorisedDishDict, setCategorisedDishDict] =
+    useState<DishByCategory>({});
+  const [dishSectionListData, setDishSectionListData] = useState<
+    { title: string; data: Dish[] }[]
   >([]);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const shownSections = useMemo(
     () =>
-      ingredientSectionListData.map((s) => ({
+      dishSectionListData.map((s) => ({
         title: s.title,
         data: expanded.has(s.title) ? s.data : [],
       })),
-    [ingredientSectionListData, expanded]
+    [dishSectionListData, expanded]
   );
 
-  const [selectedIngredient, setSelectedIngredient] =
-    useState<Ingredient | null>(null);
+  const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const expandedRef = useRef(new Set());
 
-  const [showNewIngredientOverlay, setShowNewIngredientOverlay] =
-    useState<boolean>(false);
+  const [showNewDishOverlay, setShowNewDishOverlay] = useState<boolean>(false);
 
   const [q, setQ] = useState("");
 
@@ -65,14 +68,14 @@ export default function AllIngredientsPage() {
   //              FUNCTIONS
   //=====================================
   const testFunc = () => {
-    console.log(selectedIngredient);
+    console.log(selectedDish);
   };
 
   /**
    * closeIngredientDetailOverlay
    */
   const closeIngredientDetailOverlay = () => {
-    setSelectedIngredient(null);
+    setSelectedDish(null);
   };
 
   /**
@@ -80,26 +83,23 @@ export default function AllIngredientsPage() {
    * Categorise Ingredient Categories on render
    */
   useEffect(() => {
-    const grouped = fullIngredientList.reduce<IngredientByCategory>(
-      (acc, item) => {
-        const cat: string =
-          item.category == null || item.category == ""
-            ? "Uncategorized"
-            : item.category;
-        (acc[cat] ??= []).push(item); // same as: if (!acc[cat]) acc[cat] = []; acc[cat].push(item);
-        return acc;
-      },
-      {}
-    );
-    setCategorisedIngredientDict(grouped);
+    const grouped = fullDishList.reduce<DishByCategory>((acc, item) => {
+      const cat: string =
+        item.category == null || item.category == ""
+          ? "Uncategorized"
+          : item.category;
+      (acc[cat] ??= []).push(item); // same as: if (!acc[cat]) acc[cat] = []; acc[cat].push(item);
+      return acc;
+    }, {});
+    setCategorisedDishDict(grouped);
 
     const sections = Object.entries(grouped).map(([title, data]) => ({
       title,
       data,
     }));
 
-    setIngredientSectionListData(sections);
-  }, [fullIngredientList]);
+    setDishSectionListData(sections);
+  }, [fullDishList]);
 
   /** TODO
    * useEffect
@@ -117,25 +117,6 @@ export default function AllIngredientsPage() {
     });
   };
 
-  /**
-   * itrIngredientCount
-   * Change ingredient portionsAvaliable by itr amount
-   * @param {*} ingredient Ingredient Editted
-   * @param {*} itr Iterated Amount
-   */
-  const itrIngredientCount = (ingredient: Ingredient, itr: number) => {
-    const ingredient_id = ingredient._id;
-    const updatedIngredient = {
-      ...ingredient,
-      portionsAvaliable:
-        ingredient.portionsAvaliable == null
-          ? null
-          : ingredient.portionsAvaliable + itr,
-    };
-
-    editIngredient(ingredient_id, updatedIngredient);
-  };
-
   //=====================================
   //              UI COMPONENTS
   //=====================================
@@ -144,11 +125,11 @@ export default function AllIngredientsPage() {
     <View className="px-5 pt-4 pb-3">
       <View className="flex flex-row justify-between items-center">
         <Text className="text-4xl font-bold text-gray-800 pb-2">
-          All Ingredients Page
+          All Dishes Page
         </Text>
         <Pressable
           className="bg-gray-300 rounded-full w-[30px] h-[30px] items-center justify-center"
-          onPress={() => setShowNewIngredientOverlay(true)}
+          onPress={() => setShowNewDishOverlay(true)}
         >
           <Text>+</Text>
         </Pressable>
@@ -167,7 +148,7 @@ export default function AllIngredientsPage() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="px-5 pt-4 pb-3">
         <Text className="text-4xl font-bold text-gray-800 pb-2">
-          All Ingredients Page
+          All Dishes Page
         </Text>
       </View>
       <View className="flex flex-row items-center justify-between px-5">
@@ -175,7 +156,7 @@ export default function AllIngredientsPage() {
           <SearchBar
             value={q}
             onChangeText={setQ}
-            placeholder="Search ingredients"
+            placeholder="Search Dishes"
             debounceMs={150}
             returnKeyType="search"
           />
@@ -183,7 +164,7 @@ export default function AllIngredientsPage() {
         <Pressable
           className="w-[40px] h-[40px] bg-gray-400 rounded-full flex items-center justify-center"
           onPress={() => {
-            setShowNewIngredientOverlay(true);
+            setShowNewDishOverlay(true);
           }}
         >
           <Text>+</Text>
@@ -202,36 +183,13 @@ export default function AllIngredientsPage() {
         renderItem={({ item }) => (
           <Pressable
             className="flex flex-row h-[50px] w-[395px] px-5 mt-1 items-center bg-gray-100 rounded-lg mx-5 px-2"
-            onPress={() => setSelectedIngredient(item)}
+            onPress={() => setSelectedDish(item)}
           >
             <View className="h-[40px]">
               <Text className="text-lg flex-1">{item.name}</Text>
-              <Text className="text-md text-gray-500">{item.brand}</Text>
-            </View>
-
-            <View className="flex flex-row w-[140px] items-center justify-between right-4 absolute">
-              <Pressable
-                className="w-[30px] h-[30px] items-center justify-center bg-gray-300 rounded-xl"
-                onPress={() => {
-                  itrIngredientCount(item, -1);
-                }}
-              >
-                <Text>-</Text>
-              </Pressable>
-
-              <Text className="w-[80px] text-center">
-                {item.portionsAvaliable == null ? "∞ " : item.portionsAvaliable}
-                {item.portionUnit ?? ""}
+              <Text className="text-md text-gray-500">
+                {item.restaurant}, {item.description}
               </Text>
-
-              <Pressable
-                className="w-[30px] h-[30px] items-center justify-center bg-gray-300 rounded-xl"
-                onPress={() => {
-                  itrIngredientCount(item, 1);
-                }}
-              >
-                <Text>+</Text>
-              </Pressable>
             </View>
           </Pressable>
         )}
@@ -240,46 +198,46 @@ export default function AllIngredientsPage() {
 
       {/* Overlay as a Modal */}
       <Modal
-        visible={showNewIngredientOverlay}
+        visible={showNewDishOverlay}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowNewIngredientOverlay(false)}
+        onRequestClose={() => setShowNewDishOverlay(false)}
       >
         {/* Backdrop */}
         <Pressable
           className="flex-1 bg-black/40"
-          onPress={() => setShowNewIngredientOverlay(false)}
+          onPress={() => setShowNewDishOverlay(false)}
         />
 
         {/* Sheet content */}
         <View className="absolute bottom-0 left-[2.5%] right-0 h-[90%] w-[95%] bg-white rounded-t-2xl p-4">
-          <NewIngredientPage
-            passedCloseOverlay={() => setShowNewIngredientOverlay(false)}
+          <NewDishPage
+            passedCloseOverlay={() => setShowNewDishOverlay(false)}
           />
         </View>
       </Modal>
 
       <Modal
-        visible={selectedIngredient != null}
+        visible={selectedDish != null}
         transparent
         animationType="slide"
-        onRequestClose={() => setSelectedIngredient(null)}
+        onRequestClose={() => setSelectedDish(null)}
       >
         {/* Backdrop */}
         <Pressable
           className="flex-1 bg-black/40"
-          onPress={() => setSelectedIngredient(null)}
+          onPress={() => setSelectedDish(null)}
         />
 
         {/* Sheet content */}
-        <View className="absolute bottom-0 left-[2.5%] right-0 h-[90%] w-[95%] bg-white rounded-t-2xl p-4">
-          {selectedIngredient && (
-            <EditIngredientPage
-              passedIngredient={selectedIngredient}
-              passedCloseOverlay={() => setSelectedIngredient(null)}
+        {/* <View className="absolute bottom-0 left-[2.5%] right-0 h-[90%] w-[95%] bg-white rounded-t-2xl p-4">
+          {selectedDish && (
+            <EditDishPage
+              passedDish={selectedDish}
+              passedCloseOverlay={() => setSelectedDish(null)}
             />
           )}
-        </View>
+        </View> */}
       </Modal>
     </SafeAreaView>
   );

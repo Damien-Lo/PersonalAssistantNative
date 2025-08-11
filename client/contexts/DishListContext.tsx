@@ -7,21 +7,21 @@ import { Ingredient } from "./IngredientListContext";
 export interface Dish {
   _id: string;
   name: string;
-  description: string;
-  meals: string[];
+  description: string | null;
   category: string;
+  meals: string[];
   ingredientsList: {
     ingredientObject: Ingredient;
     amount: number;
   }[];
-  recipe: string;
-  restaurant: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fats: number;
-  fiber: number;
-  sodium: number;
+  recipe: string | null;
+  restaurant: string | null;
+  calories: number | null;
+  protein: number | null;
+  carbs: number | null;
+  fats: number | null;
+  fiber: number | null;
+  sodium: number | null;
 }
 
 export type NewDish = Omit<Dish, "_id">;

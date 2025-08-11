@@ -263,6 +263,7 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
               <CreatableSelector
                 options={Array.from(knownBrands)}
                 value={brand}
+                isMulti={false}
                 onSelect={(v) => setBrand(v)}
                 onCreate={(v) => {
                   setKnownBrands((prev) => new Set(prev).add(v));
@@ -279,6 +280,7 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
               <CreatableSelector
                 options={Array.from(knownCategories)}
                 value={category}
+                isMulti={false}
                 onSelect={(v) => setCategory(v)}
                 onCreate={(v) => {
                   setKnownBrands((prev) => new Set(prev).add(v));
@@ -307,6 +309,7 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
                 <CreatableSelector
                   options={[...unitTypes]}
                   value={portionUnit}
+                  isMulti={false}
                   onSelect={setPortionUnit}
                   onCreate={() => setPortionUnit("")}
                   placeholder="Unit"

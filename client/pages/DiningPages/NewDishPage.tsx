@@ -22,18 +22,19 @@ import {
 } from "react-native";
 import CreatableSelector from "../../components/HomeComponents/CreatableSelector";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Dish, DishListContext, NewDish } from "../../contexts/DishListContext";
+import { MultiSelect } from "react-native-element-dropdown";
+import CustomMultiSelect from "../../components/HomeComponents/MultiSelect";
 
-interface NewIngredientPageProps {
+interface NewDishPageProps {
   passedCloseOverlay: () => void;
 }
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-type IngredientByCategory = Record<string, Ingredient[]>;
+type DishByCategory = Record<string, Dish[]>;
 
-const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
-  passedCloseOverlay,
-}) => {
+const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
   //=====================================
   //              VARIABLES
   //=====================================
@@ -47,19 +48,26 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
     deleteIngredient,
   } = useContext(IngredientListContext);
 
-  const [test, setTest] = useState<number>(0);
+  const { fullDishList, setFullDishList, createDish, editDish, deleteDish } =
+    useContext(DishListContext);
 
   //STATE VARIABLES
   //Dish Object Variables
-  const [ingredientName, setIngredientName] = useState<string>("");
+  const [dishName, setDishName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [category, setCategory] = useState<string | null>("");
-  const [expiryDate, setExpiryDate] = useState<Date | null>(null);
-  const [brand, setBrand] = useState<string>("Generic");
-  const [portionsAvaliable, setPortionsAvaliable] = useState<string | null>(
-    null
-  );
-  const [portionUnit, setPortionUnit] = useState<string>("g");
+  const [meals, setMeals] = useState<string[] | null>(null);
+  const [ingredientList, setIngredientList] = useState<
+    | [
+        {
+          ingredientObject: Ingredient;
+          amount: number;
+        },
+      ]
+    | null
+  >(null);
+  const [recipe, setRecipe] = useState<string | null>(null);
+  const [restaurant, setRestaurant] = useState<string | null>(null);
   const [calories, setCalories] = useState<string>("");
   const [protein, setProtein] = useState<string>("");
   const [carbs, setCarbs] = useState<string>("");
@@ -69,46 +77,31 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
 
   //Supporting Variables
   const navigation = useNavigation<Nav>();
-  const [categorisedIngredientDict, setCategorisedIngredientDict] =
-    useState<IngredientByCategory>({});
-  const [unitOptions, setUnitOptions] = useState<
-    { label: string; value: any }[]
-  >([]);
-  const [brandOptions, setBrandOptions] = useState<
-    { label: string; value: any }[]
-  >([]);
-  const [categoryOptions, setCategoryOptions] = useState<
-    { label: string; value: any }[]
-  >([]);
-
-  const [showDatePicker, setShowDatePicker] = useState<boolean>(true);
-  const [latestSetDate, setLatestSetDate] = useState<Date>(new Date());
-
+  const [categorisedDishDict, setCategorisedDishDict] =
+    useState<DishByCategory>({});
+  const [fullIngredeintsListDictionary, setFullIngredientListDictionary] =
+    useState<Map<Ingredient, string>>(new Map());
+  const [knownMeals, setKnownMeals] = useState<Set<string>>(
+    new Set(["Breakfast", "Lunch", "Dinner", "Snack"])
+  );
+  const [knownRestaurants, setKnownRestuaruants] = useState<Set<string>>(
+    new Set()
+  );
+  const [knownCategories, setKnwonCategories] = useState<Set<string>>(
+    new Set()
+  );
+  const [currentlySelectedIngredient, setCurrentlySelectedIngredient] =
+    useState<Ingredient | null>(null);
+  const [
+    currentlySelectedIngredientAmount,
+    setCurrentlySelectedIngredientAmount,
+  ] = useState<number>(0);
   //=====================================
   //              FUNCTIONS
   //=====================================
 
   const testFunc = () => {
-    // const newIngredient: NewIngredient = {
-    //   name: ingredientName,
-    //   description: description,
-    //   category: category === null ? "Uncategorised" : category,
-    //   expiryDate: expiryDate ? new Date(expiryDate) : null,
-    //   brand: brand === null ? "Generic" : brand,
-    //   portionsAvaliable:
-    //     portionsAvaliable === null ? null : Number(portionsAvaliable),
-    //   portionUnit: portionUnit,
-    //   calories: isNaN(Number(calories)) ? 0 : Number(calories),
-    //   protein: isNaN(Number(protein)) ? 0 : Number(protein),
-    //   carbs: isNaN(Number(carbs)) ? 0 : Number(carbs),
-    //   fats: isNaN(Number(fats)) ? 0 : Number(fats),
-    //   fiber: isNaN(Number(fiber)) ? 0 : Number(fiber),
-    //   sodium: isNaN(Number(sodium)) ? 0 : Number(sodium),
-    // };
-
-    // console.log(newIngredient);
-    console.log("Test Clicked");
-    console.log(brand);
+    console.log(meals);
   };
 
   //Navigate Functions
@@ -119,32 +112,37 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
    */
   useEffect(() => {
     // Group data by category
-    const unitsSet: Set<string> = new Set();
-    const brandsSet: Set<string> = new Set();
     const categoriesSet: Set<string> = new Set();
-    const grouped = fullIngredientList.reduce<IngredientByCategory>(
-      (acc, item) => {
-        item.portionUnit == null ? null : unitsSet.add(item.portionUnit);
-        brandsSet.add(item.brand);
-        const cat: string = item.category ?? "Uncategorized";
-        categoriesSet.add(cat);
-        (acc[cat] ??= []).push(item);
-        return acc;
-      },
-      {}
-    );
+    const mealSet: Set<string> = new Set();
+    const restaurantSet: Set<string> = new Set();
+    const grouped = fullDishList.reduce<DishByCategory>((acc, item) => {
+      item.meals
+        ? item.meals.forEach((item) => {
+            mealSet.add(item);
+          })
+        : null;
+      item.restaurant ? restaurantSet.add(item.restaurant) : null;
+      const cat: string = item.category ?? "Uncategorized";
+      categoriesSet.add(cat);
+      (acc[cat] ??= []).push(item);
+      return acc;
+    }, {});
 
-    setCategorisedIngredientDict(grouped);
-    setUnitOptions(
-      Array.from(unitsSet, (item) => ({ label: item, value: item }))
-    );
-    setBrandOptions(
-      Array.from(brandsSet, (item) => ({ label: item, value: item }))
-    );
-    setCategoryOptions(
-      Array.from(categoriesSet, (item) => ({ label: item, value: item }))
-    );
+    setCategorisedDishDict(grouped);
+    setKnownMeals(mealSet);
+    setKnownRestuaruants(restaurantSet);
+    setKnwonCategories(categoriesSet);
   }, []);
+
+  useEffect(() => {
+    const map = new Map<Ingredient, string>();
+
+    fullIngredientList.forEach((ingredientObject) => {
+      map.set(ingredientObject.name, ingredientObject);
+    });
+
+    setFullIngredientListDictionary(map);
+  }, [fullIngredientList]);
 
   /**
    * handleSave
@@ -152,15 +150,14 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
    * close overllay, if not return to main ingredient page
    */
   const handleSave = async () => {
-    const newIngredient: NewIngredient = {
-      name: ingredientName.trim(),
-      description: description.trim(),
-      category: category === null ? "Uncategorised" : category.trim(),
-      expiryDate: expiryDate ? new Date(expiryDate) : null,
-      brand: brand === null ? "Generic" : brand.trim(),
-      portionsAvaliable:
-        portionsAvaliable === null ? null : Number(portionsAvaliable),
-      portionUnit: portionUnit.trim(),
+    const newDish: NewDish = {
+      name: dishName,
+      description: description,
+      category: category === null ? "Uncategorised" : category,
+      meals: meals ? meals : [],
+      ingredientsList: ingredientList ? ingredientList : [],
+      recipe: recipe,
+      restaurant: restaurant,
       calories: isNaN(Number(calories)) ? 0 : Number(calories),
       protein: isNaN(Number(protein)) ? 0 : Number(protein),
       carbs: isNaN(Number(carbs)) ? 0 : Number(carbs),
@@ -169,9 +166,9 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
       sodium: isNaN(Number(sodium)) ? 0 : Number(sodium),
     };
 
-    console.log("Saving Ingredient:", newIngredient);
+    console.log("Saving Dish:", newDish);
 
-    createIngredient(newIngredient);
+    createDish(newDish);
   };
 
   //=====================================
@@ -207,9 +204,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
             >
               <Text className="text-red-500">Cancel</Text>
             </Pressable>
-            <Text className="text-xl font-bold text-center">
-              New Ingredients Page
-            </Text>
+            <Text className="text-xl font-bold text-center">New Dish Page</Text>
             <Pressable
               className="flex items-center justify-center"
               onPress={() => {
@@ -223,13 +218,13 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
 
           {/* Ingredient Name */}
           <View className="mb-4">
-            <Text className="text-xl font-bold mb-2">Ingredient Name</Text>
+            <Text className="text-xl font-bold mb-2">Dish Name</Text>
             <TextInput
               className="border h-[40px] pl-4 rounded-xl"
               placeholder="Input the Ingredient name"
-              value={ingredientName}
+              value={dishName}
               onChangeText={(value) => {
-                setIngredientName(value);
+                setDishName(value);
               }}
             />
           </View>
@@ -248,88 +243,76 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
             ></TextInput>
           </View>
 
-          {/* Brand */}
-          <View className="mb-4">
-            <Text className="text-xl font-bold mb-2">Brand</Text>
-            <View className="h-[50px]">
-              <CreatableSelector
-                options={Array.from(brandOptions)}
-                valueToSet={brand}
-                setValueFunc={setBrand}
-                placeholder="Type or Select A Brand"
-              />
-            </View>
-          </View>
-
           {/* Category */}
           <View className="mb-4">
             <Text className="text-xl font-bold mb-2">Category</Text>
-            <View className="h-[50px]">
+            <View className="">
               <CreatableSelector
-                options={Array.from(categoryOptions)}
-                valueToSet={category}
-                setValueFunc={setCategory}
-                placeholder="Type or Select A Category"
-              />
-            </View>
-          </View>
-
-          {/* Portions Avaliable */}
-          <View className="mb-4">
-            <Text className="text-xl font-bold mb-2">Portions Available</Text>
-
-            <View className="flex flex-row items-center h-[50px]">
-              <TextInput
-                className="border h-full w-[240px] mr-4 pl-2"
-                placeholder=""
-                keyboardType="decimal-pad"
-                value={portionsAvaliable ? portionsAvaliable : ""}
-                onChangeText={(value) => {
-                  setPortionsAvaliable(value === "" ? null : value);
+                options={Array.from(knownCategories)}
+                value={category}
+                onSelect={(v) => setCategory(v)}
+                onCreate={(v) => {
+                  setKnwonCategories((prev) => new Set(prev).add(v));
                 }}
+                placeholder="Select or type a brand"
               />
-
-              <View className="h-full w-[120px]">
-                <CreatableSelector
-                  options={Array.from(unitOptions)}
-                  valueToSet={portionUnit}
-                  setValueFunc={setPortionUnit}
-                  placeholder="Type or Select A Unit"
-                />
-              </View>
             </View>
           </View>
 
-          {/* Expiry Date */}
-          <View className="mb-4 flex flex-row items-center h-[60px]">
-            <Text className="text-xl font-bold">Expiry Date</Text>
-            <View className="pl-4">
-              {showDatePicker && (
-                <DateTimePicker
-                  value={expiryDate ?? new Date()}
-                  mode="date"
-                  display="default"
-                  onChange={(event, selectedDate) => {
-                    if (selectedDate) {
-                      setExpiryDate(selectedDate);
-                      setLatestSetDate(selectedDate);
-                    }
-                  }}
-                />
-              )}
+          {/* Meals */}
+          <View className="mb-4">
+            <Text className="text-xl font-bold mb-2">Meals</Text>
+            <View className="">
+              <CustomMultiSelect
+                options={Array.from(knownMeals)}
+                setFunc={setMeals}
+                placeholder="Select Appropriate Meals"
+              ></CustomMultiSelect>
             </View>
-            <Switch
-              className="absolute right-0"
-              value={showDatePicker}
-              onValueChange={() => {
-                if (showDatePicker) {
-                  setExpiryDate(null);
-                } else {
-                  setExpiryDate(latestSetDate);
-                }
-                setShowDatePicker(!showDatePicker);
-              }}
-            ></Switch>
+          </View>
+
+          {/* Restaurant */}
+          <View className="mb-4">
+            <Text className="text-xl font-bold mb-2">Restaurant</Text>
+            <View className="">
+              <CreatableSelector
+                options={Array.from(knownRestaurants)}
+                value={restaurant}
+                onSelect={(v) => setRestaurant(v)}
+                onCreate={(v) => {
+                  setKnownRestuaruants((prev) => new Set(prev).add(v));
+                }}
+                placeholder="Select or type a brand"
+              />
+            </View>
+          </View>
+
+          {/* Ingredients */}
+          <View className="mb-4">
+            <Text className="text-xl font-bold mb-2">Ingredients</Text>
+            <View className="flex flex-row w-[65%] items-center">
+              <CreatableSelector
+                options={Array.from(
+                  Object.values(fullIngredeintsListDictionary)
+                )}
+                value={currentlySelectedIngredient}
+                onSelect={(v) => setCurrentlySelectedIngredient(v)}
+                onCreate={(v) => {
+                  setKnownRestuaruants((prev) => new Set(prev).add(v));
+                }}
+                placeholder="Select or type an Ingredient to Add"
+              />
+              <TextInput
+                className="border ml-2 w-[60px] h-[50px] rounded-lg p-2"
+                keyboardType="decimal-pad"
+              ></TextInput>
+              <Pressable
+                className="bg-blue-200 w-[60px] h-[50px] rounded-lg items-center justify-center ml-2"
+                onPress={() => {}}
+              >
+                <Text>Add</Text>
+              </Pressable>
+            </View>
           </View>
 
           {/* Nutrition Information */}
@@ -421,4 +404,4 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
   );
 };
 
-export default NewIngredientPage;
+export default NewDishPage;
