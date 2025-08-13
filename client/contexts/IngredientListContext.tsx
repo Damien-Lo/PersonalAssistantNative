@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
 
 //=================================================================
 //              INTERFACES AND TYPES
@@ -53,21 +54,28 @@ export const IngredientListProvider: React.FC<React.PropsWithChildren> = ({
     []
   );
 
+  const { user, authFetch } = useAuth();
+
   //=====================================
   //              Functions
   //=====================================
   useEffect(() => {
-    const fetchIngredients = async () => {
-      try {
-        const res = await fetch("http://192.168.1.83:4000/api/ingredients");
-        const data: Ingredient[] = await res.json();
-        setFullIngredientList(data);
-      } catch (error) {
-        console.error("Failed to fetch ingredients:", error);
-      }
+    if (!user) {
+      setFullIngredientList([]);
+      return;
+    }
+
+    let alive = true;
+    (async () => {
+      const res = await authFetch("/api/ingredients");
+      const data = res.ok ? await res.json() : [];
+      if (alive) setFullIngredientList(data);
+    })();
+
+    return () => {
+      alive = false;
     };
-    fetchIngredients();
-  }, []);
+  }, [user?.id]);
 
   /**
    * createIngredient
@@ -77,9 +85,8 @@ export const IngredientListProvider: React.FC<React.PropsWithChildren> = ({
     newIngredient: NewIngredient
   ): Promise<void> => {
     try {
-      const res = await fetch("http://192.168.1.83:4000/api/ingredients", {
+      const res = await authFetch("/api/ingredients", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newIngredient),
       });
       const savedIngredient: Ingredient = await res.json();
@@ -98,14 +105,11 @@ export const IngredientListProvider: React.FC<React.PropsWithChildren> = ({
     updatedFields: Partial<Ingredient>
   ): Promise<void> => {
     try {
-      const res = await fetch(
-        `http://192.168.1.83:4000/api/ingredients/${id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedFields),
-        }
-      );
+      const res = await authFetch(`/api/ingredients/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedFields),
+      });
       const updatedIngredient: Ingredient = await res.json();
       setFullIngredientList((prev) =>
         prev.map((ing) => (ing._id === id ? updatedIngredient : ing))
@@ -121,7 +125,7 @@ export const IngredientListProvider: React.FC<React.PropsWithChildren> = ({
    */
   const deleteIngredient = async (id: string): Promise<void> => {
     try {
-      await fetch(`http://192.168.1.83:4000/api/ingredients/${id}`, {
+      await authFetch(`/api/ingredients/${id}`, {
         method: "DELETE",
       });
       setFullIngredientList((prev) => prev.filter((ing) => ing._id !== id));

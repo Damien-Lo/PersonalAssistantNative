@@ -47,10 +47,8 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
     deleteIngredient,
   } = useContext(IngredientListContext);
 
-  const [test, setTest] = useState<number>(0);
-
   //STATE VARIABLES
-  //Dish Object Variables
+  //Ingredeint Object Variables
   const [ingredientName, setIngredientName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [category, setCategory] = useState<string | null>("");
@@ -59,7 +57,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
   const [portionsAvaliable, setPortionsAvaliable] = useState<string | null>(
     null
   );
-  const [portionUnit, setPortionUnit] = useState<string>("g");
+  const [portionUnit, setPortionUnit] = useState<string>("");
   const [calories, setCalories] = useState<string>("");
   const [protein, setProtein] = useState<string>("");
   const [carbs, setCarbs] = useState<string>("");

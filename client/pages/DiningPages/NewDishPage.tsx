@@ -13,6 +13,7 @@ import {
   SafeAreaView,
 } from "react-native-safe-area-context";
 import {
+  FlatList,
   Pressable,
   ScrollView,
   Switch,
@@ -24,7 +25,7 @@ import CreatableSelector from "../../components/HomeComponents/CreatableSelector
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Dish, DishListContext, NewDish } from "../../contexts/DishListContext";
 import { MultiSelect } from "react-native-element-dropdown";
-import CustomMultiSelect from "../../components/HomeComponents/MultiSelect";
+import CustomMultiSelect from "../../components/HomeComponents/CustomMultiSelect";
 
 interface NewDishPageProps {
   passedCloseOverlay: () => void;
@@ -57,23 +58,20 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
   const [description, setDescription] = useState<string>("");
   const [category, setCategory] = useState<string | null>("");
   const [meals, setMeals] = useState<string[] | null>(null);
-  const [ingredientList, setIngredientList] = useState<
-    | [
-        {
-          ingredientObject: Ingredient;
-          amount: number;
-        },
-      ]
-    | null
-  >(null);
+  const [ingredientsList, setIngredientsList] = useState<
+    {
+      ingredientObject: Ingredient;
+      amount: number;
+    }[]
+  >([]);
   const [recipe, setRecipe] = useState<string | null>(null);
   const [restaurant, setRestaurant] = useState<string | null>(null);
-  const [calories, setCalories] = useState<string>("");
-  const [protein, setProtein] = useState<string>("");
-  const [carbs, setCarbs] = useState<string>("");
-  const [fats, setFats] = useState<string>("");
-  const [fiber, setFiber] = useState<string>("");
-  const [sodium, setSodium] = useState<string>("");
+  const [calories, setCalories] = useState<number>(0);
+  const [protein, setProtein] = useState<number>(0);
+  const [carbs, setCarbs] = useState<number>(0);
+  const [fats, setFats] = useState<number>(0);
+  const [fiber, setFiber] = useState<number>(0);
+  const [sodium, setSodium] = useState<number>(0);
 
   //Supporting Variables
   const navigation = useNavigation<Nav>();
@@ -81,27 +79,29 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
     useState<DishByCategory>({});
   const [fullIngredeintsListDictionary, setFullIngredientListDictionary] =
     useState<Map<Ingredient, string>>(new Map());
-  const [knownMeals, setKnownMeals] = useState<Set<string>>(
-    new Set(["Breakfast", "Lunch", "Dinner", "Snack"])
+  const [mealOptions, setMealOptions] = useState<
+    { label: string; value: any }[]
+  >([]);
+  const [restaurantOptions, setRestaurantOptions] = useState<
+    { label: string; value: any }[]
+  >([]);
+  const [categoryOptions, setCategoryOptions] = useState<
+    { label: string; value: any }[]
+  >([]);
+  const [ingredientOptions, setIngredientOptions] = useState<
+    { label: string; value: Ingredient }[]
+  >([]);
+  const [currentIngredient, setCurrentIngredient] = useState<Ingredient | null>(
+    null
   );
-  const [knownRestaurants, setKnownRestuaruants] = useState<Set<string>>(
-    new Set()
-  );
-  const [knownCategories, setKnwonCategories] = useState<Set<string>>(
-    new Set()
-  );
-  const [currentlySelectedIngredient, setCurrentlySelectedIngredient] =
-    useState<Ingredient | null>(null);
-  const [
-    currentlySelectedIngredientAmount,
-    setCurrentlySelectedIngredientAmount,
-  ] = useState<number>(0);
+  const [currentIngredientAmount, setCurrentIngredientAmount] =
+    useState<number>(1);
   //=====================================
   //              FUNCTIONS
   //=====================================
 
   const testFunc = () => {
-    console.log(meals);
+    console.log(ingredientsList);
   };
 
   //Navigate Functions
@@ -129,19 +129,23 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
     }, {});
 
     setCategorisedDishDict(grouped);
-    setKnownMeals(mealSet);
-    setKnownRestuaruants(restaurantSet);
-    setKnwonCategories(categoriesSet);
+    setMealOptions(
+      Array.from(mealSet, (item) => ({ label: item, value: item }))
+    );
+    setRestaurantOptions(
+      Array.from(restaurantSet, (item) => ({ label: item, value: item }))
+    );
+    setCategoryOptions(
+      Array.from(categoriesSet, (item) => ({ label: item, value: item }))
+    );
   }, []);
 
   useEffect(() => {
-    const map = new Map<Ingredient, string>();
-
-    fullIngredientList.forEach((ingredientObject) => {
-      map.set(ingredientObject.name, ingredientObject);
+    const ingOption: { label: string; value: Ingredient }[] = [];
+    fullIngredientList.forEach((ing) => {
+      ingOption.push({ label: ing.name, value: ing });
     });
-
-    setFullIngredientListDictionary(map);
+    setIngredientOptions(ingOption);
   }, [fullIngredientList]);
 
   /**
@@ -155,7 +159,7 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
       description: description,
       category: category === null ? "Uncategorised" : category,
       meals: meals ? meals : [],
-      ingredientsList: ingredientList ? ingredientList : [],
+      ingredientsList: ingredientsList ? ingredientsList : [],
       recipe: recipe,
       restaurant: restaurant,
       calories: isNaN(Number(calories)) ? 0 : Number(calories),
@@ -169,6 +173,71 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
     console.log("Saving Dish:", newDish);
 
     createDish(newDish);
+  };
+
+  const computeTotals = (list: typeof ingredientsList) => {
+    return list.reduce(
+      (acc, { ingredientObject: ing, amount }) => {
+        const a = Number(amount) || 0;
+        acc.calories += a * (ing.calories ?? 0);
+        acc.protein += a * (ing.protein ?? 0);
+        acc.carbs += a * (ing.carbs ?? 0);
+        acc.fats += a * (ing.fats ?? 0);
+        acc.fiber += a * (ing.fiber ?? 0);
+        acc.sodium += a * (ing.sodium ?? 0);
+        return acc;
+      },
+      { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, sodium: 0 }
+    );
+  };
+
+  useEffect(() => {
+    autoFillNutritionInfo();
+  }, [ingredientsList]);
+
+  const addIngredient = () => {
+    if (!currentIngredient) return;
+
+    setIngredientsList((prev) => {
+      const idx = prev.findIndex(
+        (e) => e.ingredientObject._id === currentIngredient._id
+      );
+      if (idx !== -1) {
+        const next = [...prev];
+        next[idx] = {
+          ...next[idx],
+          amount:
+            Number(next[idx].amount) + Number(currentIngredientAmount || 0),
+        };
+        return next;
+      }
+      return [
+        ...prev,
+        {
+          ingredientObject: currentIngredient,
+          amount: Number(currentIngredientAmount || 0),
+        },
+      ];
+    });
+
+    setCurrentIngredient(null);
+    setCurrentIngredientAmount(1);
+  };
+
+  const removeIngredient = (ing: Ingredient) => {
+    setIngredientsList((prev) =>
+      prev.filter((item) => item.ingredientObject._id !== ing._id)
+    );
+  };
+
+  const autoFillNutritionInfo = () => {
+    const t = computeTotals(ingredientsList);
+    setCalories(t.calories);
+    setProtein(t.protein);
+    setCarbs(t.carbs);
+    setFats(t.fats);
+    setFiber(t.fiber);
+    setSodium(t.sodium);
   };
 
   //=====================================
@@ -246,15 +315,12 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
           {/* Category */}
           <View className="mb-4">
             <Text className="text-xl font-bold mb-2">Category</Text>
-            <View className="">
+            <View className="h-[50px]">
               <CreatableSelector
-                options={Array.from(knownCategories)}
-                value={category}
-                onSelect={(v) => setCategory(v)}
-                onCreate={(v) => {
-                  setKnwonCategories((prev) => new Set(prev).add(v));
-                }}
-                placeholder="Select or type a brand"
+                options={Array.from(categoryOptions)}
+                valueToSet={category}
+                setValueFunc={setCategory}
+                placeholder="Type or Select A Category"
               />
             </View>
           </View>
@@ -262,27 +328,25 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
           {/* Meals */}
           <View className="mb-4">
             <Text className="text-xl font-bold mb-2">Meals</Text>
-            <View className="">
+            <View className="h-[50px]">
               <CustomMultiSelect
-                options={Array.from(knownMeals)}
-                setFunc={setMeals}
-                placeholder="Select Appropriate Meals"
-              ></CustomMultiSelect>
+                options={Array.from(mealOptions)}
+                valueToSet={meals}
+                setValueFunc={setMeals}
+                placeholder="Type or Select Appropiate Meals"
+              />
             </View>
           </View>
 
           {/* Restaurant */}
           <View className="mb-4">
-            <Text className="text-xl font-bold mb-2">Restaurant</Text>
-            <View className="">
+            <Text className="text-xl font-bold mb-2">Brand</Text>
+            <View className="h-[50px]">
               <CreatableSelector
-                options={Array.from(knownRestaurants)}
-                value={restaurant}
-                onSelect={(v) => setRestaurant(v)}
-                onCreate={(v) => {
-                  setKnownRestuaruants((prev) => new Set(prev).add(v));
-                }}
-                placeholder="Select or type a brand"
+                options={Array.from(restaurantOptions)}
+                valueToSet={restaurant}
+                setValueFunc={setRestaurant}
+                placeholder="Type or Select A Brand"
               />
             </View>
           </View>
@@ -290,36 +354,73 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
           {/* Ingredients */}
           <View className="mb-4">
             <Text className="text-xl font-bold mb-2">Ingredients</Text>
-            <View className="flex flex-row w-[65%] items-center">
-              <CreatableSelector
-                options={Array.from(
-                  Object.values(fullIngredeintsListDictionary)
-                )}
-                value={currentlySelectedIngredient}
-                onSelect={(v) => setCurrentlySelectedIngredient(v)}
-                onCreate={(v) => {
-                  setKnownRestuaruants((prev) => new Set(prev).add(v));
-                }}
-                placeholder="Select or type an Ingredient to Add"
-              />
+            <View className="flex flex-row w-[65%] items-center mb-4">
+              <View className="h-[50px]">
+                <CreatableSelector
+                  options={Array.from(ingredientOptions)}
+                  valueToSet={currentIngredient}
+                  setValueFunc={setCurrentIngredient}
+                  placeholder="Type or Select An Ingredient"
+                />
+              </View>
               <TextInput
                 className="border ml-2 w-[60px] h-[50px] rounded-lg p-2"
                 keyboardType="decimal-pad"
+                value={String(currentIngredientAmount)}
+                onChangeText={(value) => {
+                  setCurrentIngredientAmount(Number(value));
+                }}
               ></TextInput>
+              <View className="ml-2">
+                <Text>{currentIngredient?.portionUnit}</Text>
+              </View>
               <Pressable
                 className="bg-blue-200 w-[60px] h-[50px] rounded-lg items-center justify-center ml-2"
-                onPress={() => {}}
+                onPress={() => {
+                  addIngredient();
+                }}
               >
                 <Text>Add</Text>
               </Pressable>
             </View>
+            <FlatList
+              data={ingredientsList}
+              renderItem={({ item }) => (
+                <View className="w-full h-[40px] p-2 flex-row flex">
+                  <Pressable
+                    className="bg-red-200 h-[30px] w-[30px] rounded-full items-center justify-center mr-2"
+                    onPress={() => {
+                      removeIngredient(item.ingredientObject);
+                    }}
+                  >
+                    <Text>X</Text>
+                  </Pressable>
+                  <Text className="text-center text-lg">
+                    {item.amount}
+                    {item.ingredientObject.portionUnit}{" "}
+                    {item.ingredientObject.name}
+                  </Text>
+                </View>
+              )}
+            ></FlatList>
           </View>
 
           {/* Nutrition Information */}
           <View className="mb-4">
-            <Text className="text-xl font-bold mb-2">
-              Nutrition Info Per Portion
-            </Text>
+            <View className="flex flex-row w-full mb-4 items-center">
+              <Text className="text-xl font-bold mb-2 text-center">
+                Nutrition Info Per Portion
+              </Text>
+              <Pressable
+                className="items-center justify-center bg-blue-400 w-[80px] h-[30px] rounded-full absolute right-0"
+                onPress={() => {
+                  autoFillNutritionInfo();
+                }}
+              >
+                <Text>Autofill</Text>
+              </Pressable>
+            </View>
+
             <View className="space-y-4">
               {/* Row 1 */}
               <View className="flex flex-row justify-between mb-3">
@@ -328,9 +429,9 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
                   <TextInput
                     className="border w-full h-[40px] rounded px-2"
                     keyboardType="decimal-pad"
-                    value={calories}
+                    value={String(calories)}
                     onChangeText={(value) => {
-                      setCalories(value);
+                      setCalories(Number(value));
                     }}
                   />
                 </View>
@@ -339,9 +440,9 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
                   <TextInput
                     className="border w-full h-[40px] rounded px-2"
                     keyboardType="decimal-pad"
-                    value={protein}
+                    value={String(protein)}
                     onChangeText={(value) => {
-                      setProtein(value);
+                      setProtein(Number(value));
                     }}
                   />
                 </View>
@@ -350,9 +451,9 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
                   <TextInput
                     className="border w-full h-[40px] rounded px-2"
                     keyboardType="decimal-pad"
-                    value={carbs}
+                    value={String(carbs)}
                     onChangeText={(value) => {
-                      setCarbs(value);
+                      setCarbs(Number(value));
                     }}
                   />
                 </View>
@@ -365,9 +466,9 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
                   <TextInput
                     className="border w-full h-[40px] rounded px-2"
                     keyboardType="decimal-pad"
-                    value={fats}
+                    value={String(fats)}
                     onChangeText={(value) => {
-                      setFats(value);
+                      setFats(Number(value));
                     }}
                   />
                 </View>
@@ -376,9 +477,9 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
                   <TextInput
                     className="border w-full h-[40px] rounded px-2"
                     keyboardType="decimal-pad"
-                    value={fiber}
+                    value={String(fiber)}
                     onChangeText={(value) => {
-                      setFiber(value);
+                      setFiber(Number(value));
                     }}
                   />
                 </View>
@@ -387,9 +488,9 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
                   <TextInput
                     className="border w-full h-[40px] rounded px-2"
                     keyboardType="decimal-pad"
-                    value={sodium}
+                    value={String(sodium)}
                     onChangeText={(value) => {
-                      setSodium(value);
+                      setSodium(Number(value));
                     }}
                   />
                 </View>

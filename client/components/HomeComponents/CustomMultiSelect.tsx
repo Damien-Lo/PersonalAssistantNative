@@ -23,7 +23,7 @@ type Props = {
   placeholder?: string;
 };
 
-export default function CreatableSelector({
+export default function CustomMultiSelect({
   options,
   valueToSet,
   setValueFunc,
@@ -33,14 +33,10 @@ export default function CreatableSelector({
   const [isFocused, setIsFocused] = useState(false);
   const [selectedDataLabel, setSelectedDataLabel] = useState<string>("");
 
-  const [query, setQuery] = useState<string>(valueToSet ? valueToSet : "");
+  const [query, setQuery] = useState<string>(valueToSet);
   const [filteredOptions, setFilteredOptions] = useState<
     { label: string; value: any }[]
   >([]);
-
-  useEffect(() => {
-    console.log(options);
-  }, []);
 
   useEffect(() => {
     if (query === "") {
@@ -78,41 +74,34 @@ export default function CreatableSelector({
         <Pressable
           className="bg-red-200 right-0 absolute w-[15%] h-[100%] rounded-lg items-center justify-center border"
           onPress={() => {
-            if (isFocused) {
-              textRef.current?.blur();
-            } else {
-              textRef.current?.focus();
-            }
+            textRef.current?.blur();
           }}
         >
-          <Text>▽</Text>
+          <Text>✓</Text>
         </Pressable>
       </View>
 
       {isFocused && (
-        <View className="h-[200px] w-full">
-          <View
-            className="bg-white w-full max-h-[200px] border"
-            style={{ zIndex: 999, elevation: 10 }}
-          >
-            <FlatList
-              data={filteredOptions}
-              renderItem={({ item }) => (
-                <Pressable
-                  className="bg-gray-100 h-[35px] mb-1"
-                  onPress={() => {
-                    setValueFunc(item.value);
-                    setQuery(item.label);
-                    textRef.current?.blur();
-                  }}
-                  style={{ paddingVertical: 10, paddingHorizontal: 14 }}
-                >
-                  <Text>{item.label}</Text>
-                </Pressable>
-              )}
-              keyExtractor={(item, index) => index.toString()}
-            />
-          </View>
+        <View
+          className="bg-white w-full h-[200px] border"
+          style={{ zIndex: 999, elevation: 10 }}
+        >
+          <FlatList
+            data={filteredOptions}
+            renderItem={({ item }) => (
+              <Pressable
+                onPress={() => {
+                  setValueFunc(item.value);
+                  setQuery(item.label);
+                  textRef.current?.blur();
+                }}
+                style={{ paddingVertical: 10, paddingHorizontal: 14 }}
+              >
+                <Text>{item.label}</Text>
+              </Pressable>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+          />
         </View>
       )}
     </View>

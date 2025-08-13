@@ -65,12 +65,10 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
   );
   const [brand, setBrand] = useState<string>(passedIngredient.brand);
   const [portionsAvaliable, setPortionsAvaliable] = useState<string | null>(
-    passedIngredient.portionsAvaliable
-      ? String(passedIngredient.portionsAvaliable)
-      : null
+    String(passedIngredient.portionsAvaliable)
   );
   const [portionUnit, setPortionUnit] = useState<string>(
-    passedIngredient.portionUnit ? passedIngredient.portionUnit : ""
+    passedIngredient.portionUnit ? String(passedIngredient.portionUnit) : ""
   );
   const [calories, setCalories] = useState<string>(
     String(passedIngredient.calories)
@@ -87,16 +85,23 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
   const navigation = useNavigation<Nav>();
   const [categorisedIngredientDict, setCategorisedIngredientDict] =
     useState<IngredientByCategory>({});
-  const [unitTypes, setUnitTypes] = useState<Set<string>>(new Set());
-  const [knownBrands, setKnownBrands] = useState<Set<string>>(new Set());
-  const [knownCategories, setKnwonCategories] = useState<Set<string>>(
-    new Set()
-  );
+  const [unitOptions, setUnitOptions] = useState<
+    { label: string; value: any }[]
+  >([]);
+  const [brandOptions, setBrandOptions] = useState<
+    { label: string; value: any }[]
+  >([]);
+  const [categoryOptions, setCategoryOptions] = useState<
+    { label: string; value: any }[]
+  >([]);
+
   const [showDatePicker, setShowDatePicker] = useState<boolean>(
-    expiryDate === null ? false : true
+    passedIngredient.expiryDate ? true : false
   );
   const [latestSetDate, setLatestSetDate] = useState<Date>(
-    expiryDate === null ? new Date() : new Date(expiryDate)
+    passedIngredient.expiryDate
+      ? new Date(passedIngredient.expiryDate)
+      : new Date()
   );
 
   //=====================================
@@ -149,9 +154,15 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
     );
 
     setCategorisedIngredientDict(grouped);
-    setUnitTypes(unitsSet);
-    setKnownBrands(brandsSet);
-    setKnwonCategories(categoriesSet);
+    setUnitOptions(
+      Array.from(unitsSet, (item) => ({ label: item, value: item }))
+    );
+    setBrandOptions(
+      Array.from(brandsSet, (item) => ({ label: item, value: item }))
+    );
+    setCategoryOptions(
+      Array.from(categoriesSet, (item) => ({ label: item, value: item }))
+    );
   }, []);
 
   /**
@@ -161,14 +172,14 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
    */
   const handleSave = async () => {
     const newIngredient: NewIngredient = {
-      name: ingredientName,
-      description: description,
-      category: category === null ? "Uncategorised" : category,
+      name: ingredientName.trim(),
+      description: description.trim(),
+      category: category === null ? "Uncategorised" : category.trim(),
       expiryDate: expiryDate ? new Date(expiryDate) : null,
-      brand: brand === null ? "Generic" : brand,
+      brand: brand === null ? "Generic" : brand.trim(),
       portionsAvaliable:
         portionsAvaliable === null ? null : Number(portionsAvaliable),
-      portionUnit: portionUnit,
+      portionUnit: portionUnit.trim(),
       calories: isNaN(Number(calories)) ? 0 : Number(calories),
       protein: isNaN(Number(protein)) ? 0 : Number(protein),
       carbs: isNaN(Number(carbs)) ? 0 : Number(carbs),
@@ -259,16 +270,12 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
           {/* Brand */}
           <View className="mb-4">
             <Text className="text-xl font-bold mb-2">Brand</Text>
-            <View className="">
+            <View className="h-[50px]">
               <CreatableSelector
-                options={Array.from(knownBrands)}
-                value={brand}
-                isMulti={false}
-                onSelect={(v) => setBrand(v)}
-                onCreate={(v) => {
-                  setKnownBrands((prev) => new Set(prev).add(v));
-                }}
-                placeholder="Select or type a brand"
+                options={Array.from(brandOptions)}
+                valueToSet={brand}
+                setValueFunc={setBrand}
+                placeholder="Type or Select A Brand"
               />
             </View>
           </View>
@@ -276,16 +283,12 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
           {/* Category */}
           <View className="mb-4">
             <Text className="text-xl font-bold mb-2">Category</Text>
-            <View className="">
+            <View className="h-[50px]">
               <CreatableSelector
-                options={Array.from(knownCategories)}
-                value={category}
-                isMulti={false}
-                onSelect={(v) => setCategory(v)}
-                onCreate={(v) => {
-                  setKnownBrands((prev) => new Set(prev).add(v));
-                }}
-                placeholder="Select or type a brand"
+                options={Array.from(categoryOptions)}
+                valueToSet={category}
+                setValueFunc={setCategory}
+                placeholder="Type or Select A Category"
               />
             </View>
           </View>
@@ -307,12 +310,10 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
 
               <View className="h-full w-[120px]">
                 <CreatableSelector
-                  options={[...unitTypes]}
-                  value={portionUnit}
-                  isMulti={false}
-                  onSelect={setPortionUnit}
-                  onCreate={() => setPortionUnit("")}
-                  placeholder="Unit"
+                  options={Array.from(unitOptions)}
+                  valueToSet={portionUnit}
+                  setValueFunc={setPortionUnit}
+                  placeholder="Type or Select A Unit"
                 />
               </View>
             </View>

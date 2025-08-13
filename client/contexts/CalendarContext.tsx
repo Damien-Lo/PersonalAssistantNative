@@ -20,6 +20,7 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import { Dish, DishListContext } from "./DishListContext";
 import { Ingredient, IngredientListContext } from "./IngredientListContext";
+import { useAuth } from "./AuthContext";
 
 //=================================================================
 //              INTERFACES AND TYPES
@@ -83,6 +84,8 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
   //=====================================
   //              Variabes
   //=====================================
+
+  const { user, authFetch } = useAuth();
   const [fullEventList, setFullEventList] = useState<CalendarEvent[]>([]);
   const [calendarEventTypes, setCalendarEventTypes] = useState<string[]>([
     "General Event",
@@ -105,20 +108,22 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
   //              Functions
   //=====================================
   useEffect(() => {
-    const fetchCalendarEvents = async () => {
-      try {
-        const res = await fetch("http://192.168.1.83:4000/api/calendarEvents");
-        const data = await res.json();
-        setFullEventList(data);
-      } catch (error) {
-        console.error("Failed to fetch calendar events:", error);
-      }
+    if (!user) {
+      setFullEventList([]);
+      return;
+    }
+
+    let alive = true;
+    (async () => {
+      const res = await authFetch("/api/calendarEvents");
+      const data = res.ok ? await res.json() : [];
+      if (alive) setFullEventList(data);
+    })();
+
+    return () => {
+      alive = false;
     };
-
-    fetchCalendarEvents();
-  }, []);
-
-  useEffect(() => {});
+  }, [user?.id]);
 
   /**
    * createCalendarEvent
@@ -126,15 +131,15 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
    *
    * @param {*} newEvent JSON dict following CalendarEvent model
    */
-  const createCalendarEvent = async (newEvent: NewCalendarEvent) => {
-    console.log("Create Event Triggered");
+  const createCalendarEvent = async (
+    newEvent: NewCalendarEvent
+  ): Promise<void> => {
     try {
-      const res = await fetch("http://192.168.1.83:4000/api/calendarEvents", {
+      const res = await authFetch("/api/calendarEvents", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEvent),
       });
-      const savedEvent = await res.json();
+      const savedEvent: CalendarEvent = await res.json();
       setFullEventList((prev) => [...prev, savedEvent]);
     } catch (error) {
       console.error("Failed to create calendar event:", error);
@@ -150,40 +155,19 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
   const editCalendarEvent = async (
     id: string,
     updatedFields: Partial<CalendarEvent>
-  ) => {
-    const originalEvent = fullEventList.find((event) => {
-      return event._id === id;
-    });
-
-    if (!originalEvent) {
-      console.log("Failed to find original event to edit");
-      return;
-    }
-
-    //TODO:
-    //If we are editing an event that repeats and it is not the base event (the start time is the same)
-    // if (originalEvent.repeat != "none") {
-    // }
-
-    // const areEqual = Object.keys(updatedFields).every((key) => {
-    //   return updatedFields[key] === originalEvent[key];
-    // });
-
+  ): Promise<void> => {
     try {
-      const res = await fetch(
-        `http://192.168.1.83:4000/api/calendarEvents/${id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedFields),
-        }
-      );
-      const updatedEvent = await res.json();
+      const res = await authFetch(`/api/calendarEvents/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedFields),
+      });
+      const updatedEvent: CalendarEvent = await res.json();
       setFullEventList((prev) =>
         prev.map((event) => (event._id === id ? updatedEvent : event))
       );
     } catch (error) {
-      console.error("Failed to edit calendar event:", error);
+      console.error("Failed to edit event:", error);
     }
   };
 
@@ -192,14 +176,14 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
    * DELETE a calendar event from db and from calendarEventList
    * @param {*} id ID of event to be deleted
    */
-  const deleteCalendarEvent = async (id: string) => {
+  const deleteCalendarEvent = async (id: string): Promise<void> => {
     try {
-      await fetch(`http://192.168.1.83:4000/api/calendarEvents/${id}`, {
+      await authFetch(`/api/calendarEvents/${id}`, {
         method: "DELETE",
       });
       setFullEventList((prev) => prev.filter((event) => event._id !== id));
     } catch (error) {
-      console.error("Failed to delete calendar event:", error);
+      console.error("Failed to delete event:", error);
     }
   };
 

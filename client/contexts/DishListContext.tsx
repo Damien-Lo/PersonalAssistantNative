@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { Ingredient } from "./IngredientListContext";
+import { useAuth } from "./AuthContext";
 
 //=================================================================
 //              INTERFACES AND TYPES
@@ -51,22 +52,28 @@ export const DishListProvider: React.FC<React.PropsWithChildren> = ({
   //              Variabes
   //=====================================
   const [fullDishList, setFullDishList] = useState<Dish[]>([]);
+  const { user, authFetch } = useAuth();
 
   //=====================================
   //              Functions
   //=====================================
   useEffect(() => {
-    const fetchDishes = async () => {
-      try {
-        const res = await fetch("http://192.168.1.83:4000/api/dishes");
-        const data = await res.json();
-        setFullDishList(data);
-      } catch (error) {
-        console.error("Failed to fetch dishes:", error);
-      }
+    if (!user) {
+      setFullDishList([]);
+      return;
+    }
+
+    let alive = true;
+    (async () => {
+      const res = await authFetch("/api/dishes");
+      const data = res.ok ? await res.json() : [];
+      if (alive) setFullDishList(data);
+    })();
+
+    return () => {
+      alive = false;
     };
-    fetchDishes();
-  }, []);
+  }, [user?.id]);
 
   /**
    * createDish
@@ -76,7 +83,7 @@ export const DishListProvider: React.FC<React.PropsWithChildren> = ({
    */
   const createDish = async (newDish: NewDish): Promise<void> => {
     try {
-      const res = await fetch("http://192.168.1.83:4000/api/dishes", {
+      const res = await authFetch("/api/dishes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newDish),
@@ -96,7 +103,7 @@ export const DishListProvider: React.FC<React.PropsWithChildren> = ({
    */
   const editDish = async (id: string, updatedFields: Partial<Dish>) => {
     try {
-      const res = await fetch(`http://192.168.1.83:4000/api/dishes/${id}`, {
+      const res = await authFetch(`/api/dishes/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFields),
@@ -117,7 +124,7 @@ export const DishListProvider: React.FC<React.PropsWithChildren> = ({
    */
   const deleteDish = async (id: string) => {
     try {
-      await fetch(`http://192.168.1.83:4000/api/dishes/${id}`, {
+      await authFetch(`/api/dishes/${id}`, {
         method: "DELETE",
       });
       setFullDishList((prev) => prev.filter((d) => d._id !== id));

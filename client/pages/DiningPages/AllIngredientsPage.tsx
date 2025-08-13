@@ -59,7 +59,7 @@ export default function AllIngredientsPage() {
   const [showNewIngredientOverlay, setShowNewIngredientOverlay] =
     useState<boolean>(false);
 
-  const [q, setQ] = useState("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   //=====================================
   //              FUNCTIONS
@@ -106,8 +106,10 @@ export default function AllIngredientsPage() {
    * Changes shown ingredients when search bar query changes and is not blank ""
    */
   useEffect(() => {
+    if (searchQuery === "") {
+    }
     console.log("Search Query Changed");
-  }, [q]);
+  }, [searchQuery]);
 
   const toggleSection = (title: string) => {
     setExpanded((prev) => {
@@ -173,8 +175,8 @@ export default function AllIngredientsPage() {
       <View className="flex flex-row items-center justify-between px-5">
         <View className="w-[90%] mr-[10px]">
           <SearchBar
-            value={q}
-            onChangeText={setQ}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
             placeholder="Search ingredients"
             debounceMs={150}
             returnKeyType="search"
