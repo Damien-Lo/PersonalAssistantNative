@@ -28,17 +28,25 @@ const getDishById = async (req, res) => {
 const postDishes = async (req, res) => {
   try {
     const data = req.body;
+
     if (Array.isArray(data)) {
       const docs = data.map((d) => ({ ...d, owner: req.userId }));
       const inserted = await Dish.insertMany(docs);
+      await Dish.populate(inserted, {
+        path: "ingredientsList.ingredientObject",
+        match: { owner: req.userId },
+      });
       return res.status(201).json(inserted);
     } else {
-      const newDish = new Dish({ ...data, owner: req.userId });
-      const saved = await newDish.save();
+      const saved = await new Dish({ ...data, owner: req.userId }).save();
+      await saved.populate({
+        path: "ingredientsList.ingredientObject",
+        match: { owner: req.userId },
+      });
       return res.status(201).json(saved);
     }
   } catch (error) {
-    res.status(400).json({ message: "Error creating Dish", error });
+    return res.status(400).json({ message: "Error creating Dish", error });
   }
 };
 
@@ -65,7 +73,7 @@ const patchDish = async (req, res) => {
       { _id: req.params.id, owner: req.userId },
       req.body,
       { new: true, runValidators: true }
-    );
+    ).populate("ingredientsList.ingredientObject");
     if (!updated) return res.status(404).json({ message: "Dish not found" });
     res.json(updated);
   } catch (e) {

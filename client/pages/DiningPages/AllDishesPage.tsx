@@ -19,6 +19,7 @@ import SearchBar from "../../components/HomeComponents/SearchBar";
 import EditIngredientPage from "./EditIngredientPage";
 import { Dish, DishListContext } from "../../contexts/DishListContext";
 import NewDishPage from "./NewDishPage";
+import EditDishPage from "./EditDishPage";
 
 export default function AllDishesPage() {
   const navigator = useNavigation();
@@ -230,14 +231,37 @@ export default function AllDishesPage() {
         />
 
         {/* Sheet content */}
-        {/* <View className="absolute bottom-0 left-[2.5%] right-0 h-[90%] w-[95%] bg-white rounded-t-2xl p-4">
+        <View className="absolute bottom-0 left-[2.5%] right-0 h-[95%] w-[95%] bg-white rounded-t-2xl p-4">
           {selectedDish && (
             <EditDishPage
               passedDish={selectedDish}
               passedCloseOverlay={() => setSelectedDish(null)}
             />
           )}
-        </View> */}
+        </View>
+      </Modal>
+
+      <Modal
+        visible={selectedDish != null}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedDish(null)}
+      >
+        {/* Backdrop */}
+        <Pressable
+          className="flex-1 bg-black/40"
+          onPress={() => setSelectedDish(null)}
+        />
+
+        {/* Sheet content */}
+        <View className="absolute bottom-0 left-[2.5%] right-0 h-[95%] w-[95%] bg-white rounded-t-2xl p-4">
+          {selectedDish && (
+            <EditDishPage
+              passedDish={selectedDish}
+              passedCloseOverlay={() => setSelectedDish(null)}
+            />
+          )}
+        </View>
       </Modal>
     </SafeAreaView>
   );

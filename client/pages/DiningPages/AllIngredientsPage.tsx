@@ -254,7 +254,7 @@ export default function AllIngredientsPage() {
         />
 
         {/* Sheet content */}
-        <View className="absolute bottom-0 left-[2.5%] right-0 h-[90%] w-[95%] bg-white rounded-t-2xl p-4">
+        <View className="absolute bottom-0 left-[2.5%] right-0 h-[95%] w-[95%] bg-white rounded-t-2xl p-4">
           <NewIngredientPage
             passedCloseOverlay={() => setShowNewIngredientOverlay(false)}
           />
@@ -274,7 +274,7 @@ export default function AllIngredientsPage() {
         />
 
         {/* Sheet content */}
-        <View className="absolute bottom-0 left-[2.5%] right-0 h-[90%] w-[95%] bg-white rounded-t-2xl p-4">
+        <View className="absolute bottom-0 left-[2.5%] right-0 h-[95%] w-[95%] bg-white rounded-t-2xl p-4">
           {selectedIngredient && (
             <EditIngredientPage
               passedIngredient={selectedIngredient}

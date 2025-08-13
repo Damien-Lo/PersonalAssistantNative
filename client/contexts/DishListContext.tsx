@@ -65,7 +65,7 @@ export const DishListProvider: React.FC<React.PropsWithChildren> = ({
 
     let alive = true;
     (async () => {
-      const res = await authFetch("/api/dishes");
+      const res = await authFetch("/api/dishes/");
       const data = res.ok ? await res.json() : [];
       if (alive) setFullDishList(data);
     })();

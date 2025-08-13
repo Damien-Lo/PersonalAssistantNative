@@ -193,6 +193,10 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
     editIngredient(passedIngredient._id, newIngredient);
   };
 
+  const handleDelete = async () => {
+    deleteIngredient(passedIngredient._id);
+  };
+
   //=====================================
   //              UI COMPONENTS
   //=====================================
@@ -432,6 +436,19 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
               </View>
             </View>
           </View>
+          {/* Delete Button */}
+          <View className="w-full items-center justify-center mt-5">
+            <Pressable
+              className="bg-red-300 w-[150px] h-[50px] rounded-full items-center justify-center"
+              onPress={() => {
+                handleDelete();
+                passedCloseOverlay();
+              }}
+            >
+              <Text className="text-lg">Delete</Text>
+            </Pressable>
+          </View>
+
           {/* Buffer Space */}
           {true && <View className="w-full h-[300px]"></View>}
         </View>

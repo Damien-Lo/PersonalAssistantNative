@@ -11,8 +11,8 @@ export default function LoginPage() {
   const { user, login, register, logout, authFetch, refreshOnce, loading } =
     useAuth();
   const navigation = useNavigation<Nav>();
-  const [emailInput, setEmailInput] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [emailInput, setEmailInput] = useState<string>("test1@gmail.com");
+  const [password, setPassword] = useState<string>("Test@test1234");
 
   const loginClicked = async () => {
     try {
@@ -37,6 +37,7 @@ export default function LoginPage() {
           placeholder="Enter Email"
           autoCapitalize="none"
           autoCorrect={false}
+          value={emailInput}
           onChangeText={(value) => {
             setEmailInput(value);
           }}
@@ -47,6 +48,7 @@ export default function LoginPage() {
           placeholder="Enter Password"
           autoCapitalize="none"
           autoCorrect={false}
+          value={password}
           onChangeText={(value) => {
             setPassword(value);
           }}

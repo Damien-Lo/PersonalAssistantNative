@@ -21,7 +21,7 @@ export default function HomePage() {
         </Text>
 
         <Pressable
-          onPress={() => console.log("")}
+          onPress={() => navigation.navigate("SettingsPage")}
           className="bg-blue-500 px-4 py-2 rounded mb-4"
         >
           <Text className="text-white">Go to Settings</Text>

@@ -68,6 +68,15 @@ interface CalendarContextType {
   removeIngredientsOfEventFromStock: (event: CalendarEvent) => void;
 }
 
+export type UIEventWrapper = {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  color?: string;
+  data?: any;
+};
+
 //=================================================================
 //              CONTEXTS
 //=================================================================

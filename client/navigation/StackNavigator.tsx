@@ -8,6 +8,7 @@ import DiningPage from "../pages/DiningPages/DiningPage";
 import AllDishesPage from "../pages/DiningPages/AllDishesPage";
 import LoginPage from "../pages/LoginPage";
 import CreateUserPage from "../pages/CreateUserPage";
+import SettingsPage from "../pages/SettingsPage";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -16,6 +17,7 @@ export default function StackNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="LoginPage" component={LoginPage} />
       <Stack.Screen name="CreateUserPage" component={CreateUserPage} />
+      <Stack.Screen name="SettingsPage" component={SettingsPage} />
       <Stack.Screen name="HomePage" component={HomePage} />
       <Stack.Screen name="DiningPage" component={DiningTabs} />
       <Stack.Screen name="AllIngredientsPage" component={AllIngredientsPage} />
