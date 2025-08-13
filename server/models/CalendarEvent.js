@@ -1,85 +1,93 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const calendarEventSchema = new mongoose.Schema({
+const calendarEventSchema = new mongoose.Schema(
+  {
     //General Shared Variables
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     isRendered: {
-        type: Boolean,
-        default: true
+      type: Boolean,
+      default: true,
     },
 
     type: {
-        type: String,
-        enum: ['General Event', 'Dining Event', 'To Do Item'],
-        default: 'General Event',
-        required: true
+      type: String,
+      enum: ["General Event", "Dining Event", "To Do Item"],
+      default: "General Event",
+      required: true,
     },
 
     title: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
 
     startDate: {
-        type: Date,
-        required: true
+      type: Date,
+      required: true,
     },
 
     endDate: {
-        type: Date,
-        required: true
+      type: Date,
+      required: true,
     },
 
     repeat: {
-        type: String,
-        enum: ['none', 'daily', 'weekly', 'monthly'],
-        default: 'none',
+      type: String,
+      enum: ["none", "daily", "weekly", "monthly"],
+      default: "none",
     },
 
     repeatUntil: {
-        type: Date
+      type: Date,
     },
 
     repeatDays: {
-        type: [Number]
+      type: [Number],
     },
 
     skipRenderDays: {
-        type: [Date],
-        default: []
+      type: [Date],
+      default: [],
     },
 
     description: {
-        type: String,
+      type: String,
     },
 
     attendees: {
-        type: [String]
+      type: [String],
     },
-
 
     //diningEvent Specific Itmes
     meal: {
-        required: false,
-        type: String,
-        enum: ['Breakfast', 'Lunch', 'Dinner', 'Snack'],
-        default: undefined
+      required: false,
+      type: String,
+      enum: ["Breakfast", "Lunch", "Dinner", "Snack"],
+      default: undefined,
     },
     dishList: {
-        type: [
-            {
-                dishObject: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'Dish',
-                    required: false
-                },
-                loggedStatus: {
-                    type: Boolean,
-                    default: false
-                }
-            }
-        ],
-        default: []
-    }
-})
+      type: [
+        {
+          dishObject: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Dish",
+            required: false,
+          },
+          loggedStatus: {
+            type: Boolean,
+            default: false,
+          },
+        },
+      ],
+      default: [],
+    },
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('CalendarEvent', calendarEventSchema);
+module.exports = mongoose.model("CalendarEvent", calendarEventSchema);

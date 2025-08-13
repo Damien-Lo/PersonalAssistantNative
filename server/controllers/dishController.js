@@ -2,9 +2,9 @@ const Dish = require("../models/Dish");
 
 const getAllDishes = async (req, res) => {
   try {
-    const dishes = await Dish.find().populate(
-      "ingredientsList.ingredientObject"
-    );
+    const dishes = await Dish.find({
+      owner: req.userId,
+    }).populate("ingredientsList.ingredientObject");
     res.json(dishes);
   } catch (error) {
     res.status(500).json({ message: "Error fetching dishes", error });
@@ -13,9 +13,10 @@ const getAllDishes = async (req, res) => {
 
 const getDishById = async (req, res) => {
   try {
-    const dish = await Dish.findById(req.params.id).populate(
-      "ingredientsList.ingredientObject"
-    );
+    const dish = await Dish.findOne({
+      _id: req.params.id,
+      owner: req.userId,
+    }).populate("ingredientsList.ingredientObject");
     if (!dish) return res.status(404).json({ message: "Dish not found" });
     res.json(dish);
   } catch (error) {
@@ -27,26 +28,26 @@ const getDishById = async (req, res) => {
 const postDishes = async (req, res) => {
   try {
     const data = req.body;
-
     if (Array.isArray(data)) {
-      const inserted = await Dish.insertMany(data);
+      const docs = data.map((d) => ({ ...d, owner: req.userId }));
+      const inserted = await Dish.insertMany(docs);
       return res.status(201).json(inserted);
     } else {
-      const newDish = new Dish(data);
+      const newDish = new Dish({ ...data, owner: req.userId });
       const saved = await newDish.save();
       return res.status(201).json(saved);
     }
   } catch (error) {
-    console.error("Error creating dish:", error);
-    res.status(400).json({ message: "Error creating dish", error });
+    res.status(400).json({ message: "Error creating Dish", error });
   }
 };
 
 const deleteDish = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const deleted = await Dish.findByIdAndDelete(id);
+    const deleted = await Dish.findByIdAndDelete({
+      _id: req.params.id,
+      owner: req.userId,
+    });
 
     if (!deleted) {
       return res.status(404).json({ message: "Dish not found" });
@@ -59,21 +60,16 @@ const deleteDish = async (req, res) => {
 };
 
 const patchDish = async (req, res) => {
-  const { id } = req.params;
-  const update = req.body;
   try {
-    const updatedDish = await Dish.findByIdAndUpdate(id, update, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!updatedDish) {
-      return res.status(404).json({ message: "Dish not found" });
-    }
-    res.json(updatedDish);
-  } catch (err) {
-    console.error("Update failed:", err);
-    res.status(500).json({ message: "Server error" });
+    const updated = await Dish.findOneAndUpdate(
+      { _id: req.params.id, owner: req.userId },
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!updated) return res.status(404).json({ message: "Dish not found" });
+    res.json(updated);
+  } catch (e) {
+    res.status(400).json({ message: "Update failed", e });
   }
 };
 
