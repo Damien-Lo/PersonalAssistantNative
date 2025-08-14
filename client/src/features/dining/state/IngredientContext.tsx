@@ -1,29 +1,15 @@
 import React, { createContext, useState, useEffect } from "react";
 import { useAuth } from "../../auth/state/AuthContext";
+import {
+  Ingredient,
+  NewIngredient,
+} from "../../../domain/ingredients/IngredientTypes";
 
 //=================================================================
 //              INTERFACES AND TYPES
 //=================================================================
-export interface Ingredient {
-  _id: string;
-  name: string;
-  description: string;
-  category: string;
-  expiryDate: Date | null;
-  brand: string;
-  portionsAvaliable: number | null;
-  portionUnit: string | null;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fats: number;
-  fiber: number;
-  sodium: number;
-}
 
-export type NewIngredient = Omit<Ingredient, "_id">;
-
-interface IngredientContextType {
+export type IngredientContextType = {
   fullIngredientList: Ingredient[];
   setFullIngredientList: React.Dispatch<React.SetStateAction<Ingredient[]>>;
   createIngredient: (newIngredient: NewIngredient) => Promise<void>;
@@ -32,7 +18,7 @@ interface IngredientContextType {
     updatedFields: Partial<Ingredient>
   ) => Promise<void>;
   deleteIngredient: (id: string) => Promise<void>;
-}
+};
 
 //=================================================================
 //              CONTEXTS
@@ -110,7 +96,9 @@ export const IngredientProvider: React.FC<React.PropsWithChildren> = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFields),
       });
-      const updatedIngredient: Ingredient = await res.json();
+      const updatedIngredient = await res.json();
+      console.log("Retrieved Updated Ingredient:");
+      console.log(updatedIngredient);
       setFullIngredientList((prev) =>
         prev.map((ing) => (ing._id === id ? updatedIngredient : ing))
       );

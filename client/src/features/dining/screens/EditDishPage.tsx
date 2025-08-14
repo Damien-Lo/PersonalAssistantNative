@@ -1,5 +1,5 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Dish, DishContext, NewDish } from "../state/DishContext";
+import { DishContext } from "../state/DishContext";
 import { RootStackParamList } from "../../../navigation/NavTypes";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -14,7 +14,9 @@ import CreatableSelector from "../../../shared/components/CreatableSelector";
 import CustomMultiSelect from "../../../shared/components/CustomMultiSelect";
 import { useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
-import { Ingredient, IngredientContext } from "../state/IngredientContext";
+import { IngredientContext } from "../state/IngredientContext";
+import { Ingredient } from "../../../domain/ingredients/IngredientTypes";
+import { Dish, DishByCategory } from "../../../domain/dishes/DishTypes";
 
 interface EditDishPageProps {
   passedDish: Dish;
@@ -22,8 +24,6 @@ interface EditDishPageProps {
 }
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
-
-type DishByCategory = Record<string, Dish[]>;
 
 const EditDishPage: React.FC<EditDishPageProps> = ({
   passedDish,

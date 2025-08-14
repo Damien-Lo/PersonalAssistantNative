@@ -55,7 +55,7 @@ const patchIngredient = async (req, res) => {
   const { id } = req.params;
   const update = req.body;
   try {
-    const updated = await Ingredient.findOneAndUpdate(
+    const updatedIngredient = await Ingredient.findOneAndUpdate(
       { _id: id, owner: req.userId },
       update,
       { new: true, runValidators: true }
@@ -64,7 +64,7 @@ const patchIngredient = async (req, res) => {
     if (!updatedIngredient) {
       return res.status(404).json({ message: "Ingredient not found" });
     }
-    res.json(updatedIngredient);
+    return res.json(updatedIngredient);
   } catch (err) {
     console.error("Update failed:", err);
     res.status(500).json({ message: "Server error" });

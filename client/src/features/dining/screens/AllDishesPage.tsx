@@ -10,12 +10,13 @@ import {
 } from "react-native";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { IngredientContext, Ingredient } from "../state/IngredientContext";
+import { IngredientContext } from "../state/IngredientContext";
 import SearchBar from "../../../shared/components/SearchBar";
 import EditIngredientPage from "./EditIngredientPage";
-import { Dish, DishContext } from "../state/DishContext";
+import { DishContext } from "../state/DishContext";
 import NewDishPage from "./NewDishPage";
 import EditDishPage from "./EditDishPage";
+import { Dish, DishByCategory } from "../../../domain/dishes/DishTypes";
 
 export default function AllDishesPage() {
   const navigator = useNavigation();
@@ -23,8 +24,6 @@ export default function AllDishesPage() {
   //=====================================
   //              VARIABLES
   //=====================================
-
-  type DishByCategory = Record<string, Dish[]>;
 
   //CONTEXTS
   const {

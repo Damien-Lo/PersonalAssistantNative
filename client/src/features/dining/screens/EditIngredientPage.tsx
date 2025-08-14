@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { useContext } from "react";
-import {
-  Ingredient,
-  IngredientContext,
-  NewIngredient,
-} from "../state/IngredientContext";
+import { IngredientContext } from "../state/IngredientContext";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../navigation/NavTypes";
@@ -22,11 +18,16 @@ import {
 } from "react-native";
 import CreatableSelector from "../../../shared/components/CreatableSelector";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { DishContext } from "../state/DishContext";
+import {
+  Ingredient,
+  NewIngredient,
+} from "../../../domain/ingredients/IngredientTypes";
 
-interface EditIngredientPageProps {
+type EditIngredientPageProps = {
   passedIngredient: Ingredient;
   passedCloseOverlay: () => void;
-}
+};
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -48,6 +49,16 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
     editIngredient,
     deleteIngredient,
   } = useContext(IngredientContext);
+
+  const {
+    fullDishList,
+    setFullDishList,
+    createDish,
+    editDish,
+    deleteDish,
+    updateDishesWithIngredient,
+    calculateNutrition,
+  } = useContext(DishContext);
 
   //STATE VARIABLES
   //Dish Object Variables
@@ -191,6 +202,7 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
     console.log("Saving Ingredient:", newIngredient);
 
     editIngredient(passedIngredient._id, newIngredient);
+    updateDishesWithIngredient(passedIngredient._id, newIngredient);
   };
 
   const handleDelete = async () => {

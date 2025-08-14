@@ -1,31 +1,14 @@
 import React, { createContext, useState, useEffect } from "react";
-import { Ingredient } from "./IngredientContext";
 import { useAuth } from "../../auth/state/AuthContext";
+import {
+  Ingredient,
+  NewIngredient,
+} from "../../../domain/ingredients/IngredientTypes";
+import { Dish, NewDish } from "../../../domain/dishes/DishTypes";
 
 //=================================================================
 //              INTERFACES AND TYPES
 //=================================================================
-export interface Dish {
-  _id: string;
-  name: string;
-  description: string | null;
-  category: string;
-  meals: string[];
-  ingredientsList: {
-    ingredientObject: Ingredient;
-    amount: number;
-  }[];
-  recipe: string | null;
-  restaurant: string | null;
-  calories: number | null;
-  protein: number | null;
-  carbs: number | null;
-  fats: number | null;
-  fiber: number | null;
-  sodium: number | null;
-}
-
-export type NewDish = Omit<Dish, "_id">;
 
 interface DishContextType {
   fullDishList: Dish[];
@@ -33,6 +16,20 @@ interface DishContextType {
   createDish: (newDish: NewDish) => Promise<void>;
   editDish: (id: string, updatedFields: Partial<Dish>) => Promise<void>;
   deleteDish: (id: string) => Promise<void>;
+  updateDishesWithIngredient: (
+    ingredient_id: string,
+    updatedIngredient: NewIngredient
+  ) => void;
+  calculateNutrition: (
+    ingredientList: { amount: number; ingredientObject: Ingredient }[]
+  ) => {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fats: number;
+    fiber: number;
+    sodium: number;
+  };
 }
 
 //=================================================================
@@ -133,6 +130,81 @@ export const DishProvider: React.FC<React.PropsWithChildren> = ({
     }
   };
 
+  const updateDishesWithIngredient = (
+    ingredient_id: string,
+    updatedIngredient: NewIngredient
+  ) => {
+    const changedDishes = [];
+    setFullDishList((prev) =>
+      prev.map((dish) => {
+        const usesIngredient = dish.ingredientsList.some(
+          (entry) => entry.ingredientObject._id === ingredient_id
+        );
+        if (!usesIngredient) return dish;
+
+        const newIngredientList = dish.ingredientsList.map((entry) =>
+          entry.ingredientObject._id === ingredient_id
+            ? {
+                ...entry,
+                ingredientObject: {
+                  ...updatedIngredient,
+                  _id: ingredient_id,
+                },
+              }
+            : entry
+        );
+
+        const newDish = {
+          ...dish,
+          ...calculateNutrition(newIngredientList),
+          ingredientsList: newIngredientList,
+        };
+
+        //Update Backend Too
+        editDish(newDish._id, newDish);
+        changedDishes.push(newDish);
+        return newDish;
+      })
+    );
+  };
+
+  const calculateNutrition = (
+    ingredientList: { amount: number; ingredientObject: Ingredient }[]
+  ) => {
+    let totalCalories = 0;
+    let totalProtein = 0;
+    let totalCarbs = 0;
+    let totalFats = 0;
+    let totalFiber = 0;
+    let totalSodium = 0;
+
+    for (const ingredientEntry of ingredientList) {
+      totalCalories +=
+        (ingredientEntry.ingredientObject.calories || 0) *
+        ingredientEntry.amount;
+      totalProtein +=
+        (ingredientEntry.ingredientObject.protein || 0) *
+        ingredientEntry.amount;
+      totalCarbs +=
+        (ingredientEntry.ingredientObject.carbs || 0) * ingredientEntry.amount;
+      totalFats +=
+        (ingredientEntry.ingredientObject.fats || 0) * ingredientEntry.amount;
+      totalFiber +=
+        (ingredientEntry.ingredientObject.fiber || 0) * ingredientEntry.amount;
+      totalSodium +=
+        (ingredientEntry.ingredientObject.sodium || 0) * ingredientEntry.amount;
+    }
+
+    return {
+      calories: totalCalories,
+      protein: totalProtein,
+      carbs: totalCarbs,
+      fats: totalFats,
+      fiber: totalFiber,
+      sodium: totalSodium,
+    };
+  };
+
   //=====================================
   //              Return
   //=====================================
@@ -144,6 +216,8 @@ export const DishProvider: React.FC<React.PropsWithChildren> = ({
         createDish,
         editDish,
         deleteDish,
+        updateDishesWithIngredient,
+        calculateNutrition,
       }}
     >
       {children}
@@ -157,6 +231,8 @@ const{
     setFullDishList,
     createDish,
     editDish,
-    deleteDish
+    deleteDish,
+    updateDishesWithIngredient,
+    calculateNutrition,
 } = useContext(DishListContext)
  */

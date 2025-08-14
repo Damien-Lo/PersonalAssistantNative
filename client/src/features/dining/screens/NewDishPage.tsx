@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { useContext } from "react";
-import {
-  Ingredient,
-  IngredientContext,
-  NewIngredient,
-} from "../state/IngredientContext";
+import { IngredientContext } from "../state/IngredientContext";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../navigation/NavTypes";
@@ -23,17 +19,24 @@ import {
 } from "react-native";
 import CreatableSelector from "../../../shared/components/CreatableSelector";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Dish, DishContext, NewDish } from "../state/DishContext";
+import { DishContext } from "../state/DishContext";
 import { MultiSelect } from "react-native-element-dropdown";
 import CustomMultiSelect from "../../../shared/components/CustomMultiSelect";
+import {
+  Ingredient,
+  IngredientEntry,
+} from "../../../domain/ingredients/IngredientTypes";
+import {
+  DishByCategory,
+  NewDish,
+  Dish,
+} from "../../../domain/dishes/DishTypes";
 
 interface NewDishPageProps {
   passedCloseOverlay: () => void;
 }
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
-
-type DishByCategory = Record<string, Dish[]>;
 
 const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
   //=====================================
@@ -58,12 +61,7 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
   const [description, setDescription] = useState<string>("");
   const [category, setCategory] = useState<string | null>("");
   const [meals, setMeals] = useState<string[]>([]);
-  const [ingredientsList, setIngredientsList] = useState<
-    {
-      ingredientObject: Ingredient;
-      amount: number;
-    }[]
-  >([]);
+  const [ingredientsList, setIngredientsList] = useState<IngredientEntry[]>([]);
   const [recipe, setRecipe] = useState<string | null>(null);
   const [restaurant, setRestaurant] = useState<string | null>(null);
   const [calories, setCalories] = useState<number>(0);

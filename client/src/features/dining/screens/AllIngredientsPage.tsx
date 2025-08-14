@@ -10,10 +10,11 @@ import {
 } from "react-native";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { IngredientContext, Ingredient } from "../state/IngredientContext";
-import NewIngredientPage from "./NewIngredientPage";
+import { IngredientContext } from "../state/IngredientContext";
 import SearchBar from "../../../shared/components/SearchBar";
 import EditIngredientPage from "./EditIngredientPage";
+import { Ingredient } from "../../../domain/ingredients/IngredientTypes";
+import NewIngredientPage from "./NewIngredientPage";
 
 export default function AllIngredientsPage() {
   const navigator = useNavigation();

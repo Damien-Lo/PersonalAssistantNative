@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { useContext } from "react";
-import {
-  Ingredient,
-  IngredientContext,
-  NewIngredient,
-} from "../state/IngredientContext";
+import { IngredientContext } from "../state/IngredientContext";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../navigation/NavTypes";
@@ -22,6 +18,10 @@ import {
 } from "react-native";
 import CreatableSelector from "../../../shared/components/CreatableSelector";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import {
+  Ingredient,
+  NewIngredient,
+} from "../../../domain/ingredients/IngredientTypes";
 
 interface NewIngredientPageProps {
   passedCloseOverlay: () => void;
