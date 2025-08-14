@@ -17,7 +17,7 @@ export type Ingredient = {
 
 export type NewIngredient = Omit<Ingredient, "_id">;
 
-export type IngredientEntry = {
+export type IngredientListEntry = {
   amount: number;
   ingredientObject: Ingredient;
 };

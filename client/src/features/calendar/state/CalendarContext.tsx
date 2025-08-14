@@ -18,51 +18,21 @@
  */
 
 import { createContext, useState, useEffect, useContext } from "react";
-import { Dish, DishContext } from "../../dining/state/DishContext";
-import {
-  Ingredient,
-  IngredientContext,
-} from "../../dining/state/IngredientContext";
+import { DishContext } from "../../dining/state/DishContext";
+import { IngredientContext } from "../../dining/state/IngredientContext";
 import { useAuth } from "../../auth/state/AuthContext";
+import { Dish } from "../../../domain/dishes/DishTypes";
+import { IngredientListEntry } from "../../../domain/ingredients/IngredientTypes";
+import {
+  CalendarEvent,
+  NewCalendarEvent,
+  UIWrappedEvent,
+  VirtualCalendarEvent,
+} from "../../../domain/calendar/CalendarTypes";
 
 //=================================================================
 //              INTERFACES AND TYPES
 //=================================================================
-export interface CalendarEvent {
-  _id: string;
-  isRenderd: boolean;
-  type: string;
-  title: string;
-  startDate: Date;
-  endDate: Date;
-  repeat: string;
-  repeatUntil: Date;
-  repeatDays: number[];
-  skipRenderDays: Date[];
-  description: string;
-  meal: string;
-  dishList: {
-    dishObject: Dish;
-    loggedStatus: boolean;
-  }[];
-}
-
-export type NewCalendarEvent = Omit<CalendarEvent, "_id">;
-
-export type VirtualCalendarEvent = Omit<CalendarEvent, "_id"> & {
-  _id: string;
-  isVirtual: boolean;
-  _refid: CalendarEvent["_id"];
-};
-
-export type UIWrappedEvent = {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  color?: string;
-  data?: any;
-};
 
 interface CalendarContextType {
   fullEventList: CalendarEvent[];
@@ -231,24 +201,22 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
       );
       if (!dish) return;
 
-      dish.ingredientsList.forEach(
-        (ing_dict: { ingredientObject: Ingredient; amount: number }) => {
-          const ingredient = fullIngredientList.find(
-            (ing) => ing._id === ing_dict.ingredientObject._id
-          );
-          if (!ingredient) return;
+      dish.ingredientsList.forEach((ing_dict: IngredientListEntry) => {
+        const ingredient = fullIngredientList.find(
+          (ing) => ing._id === ing_dict.ingredientObject._id
+        );
+        if (!ingredient) return;
 
-          const updatedIngredient = {
-            ...ingredient,
-            portionsAvaliable:
-              ingredient.portionsAvaliable === null
-                ? null
-                : ingredient.portionsAvaliable - ing_dict.amount,
-          };
+        const updatedIngredient = {
+          ...ingredient,
+          portionsAvaliable:
+            ingredient.portionsAvaliable === null
+              ? null
+              : ingredient.portionsAvaliable - ing_dict.amount,
+        };
 
-          editIngredient(ingredient._id, updatedIngredient);
-        }
-      );
+        editIngredient(ingredient._id, updatedIngredient);
+      });
     });
   };
 
