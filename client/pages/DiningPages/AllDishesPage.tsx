@@ -121,30 +121,6 @@ export default function AllDishesPage() {
   //=====================================
   //              UI COMPONENTS
   //=====================================
-
-  const Header = (
-    <View className="px-5 pt-4 pb-3">
-      <View className="flex flex-row justify-between items-center">
-        <Text className="text-4xl font-bold text-gray-800 pb-2">
-          All Dishes Page
-        </Text>
-        <Pressable
-          className="bg-gray-300 rounded-full w-[30px] h-[30px] items-center justify-center"
-          onPress={() => setShowNewDishOverlay(true)}
-        >
-          <Text>+</Text>
-        </Pressable>
-      </View>
-
-      <Pressable
-        onPress={() => console.log("TEST")}
-        className="bg-red-300 w-[50px] h-[28px] mt-2 items-center justify-center rounded"
-      >
-        <Text>TEST</Text>
-      </Pressable>
-    </View>
-  );
-
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="px-5 pt-4 pb-3">
