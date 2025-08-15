@@ -43,6 +43,7 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
 
   //CONTEXTS
   const {
+    standardUnits,
     fullIngredientList,
     setFullIngredientList,
     createIngredient,
@@ -76,7 +77,9 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
   );
   const [brand, setBrand] = useState<string>(passedIngredient.brand);
   const [portionsAvaliable, setPortionsAvaliable] = useState<string | null>(
-    String(passedIngredient.portionsAvaliable)
+    passedIngredient.portionsAvaliable
+      ? String(passedIngredient.portionsAvaliable)
+      : null
   );
   const [portionUnit, setPortionUnit] = useState<string>(
     passedIngredient.portionUnit ? String(passedIngredient.portionUnit) : ""
@@ -190,7 +193,9 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
       brand: brand === null ? "Generic" : brand.trim(),
       portionsAvaliable:
         portionsAvaliable === null ? null : Number(portionsAvaliable),
-      portionUnit: portionUnit.trim(),
+      portionUnit: standardUnits.has(portionUnit.toLowerCase().trim())
+        ? portionUnit.trim()
+        : " " + portionUnit.trim(),
       calories: isNaN(Number(calories)) ? 0 : Number(calories),
       protein: isNaN(Number(protein)) ? 0 : Number(protein),
       carbs: isNaN(Number(carbs)) ? 0 : Number(carbs),
@@ -318,7 +323,7 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
                 className="border h-full w-[240px] mr-4 pl-2"
                 placeholder=""
                 keyboardType="decimal-pad"
-                value={portionsAvaliable ? portionsAvaliable : ""}
+                value={portionsAvaliable == null ? "" : portionsAvaliable}
                 onChangeText={(value) => {
                   setPortionsAvaliable(value === "" ? null : value);
                 }}

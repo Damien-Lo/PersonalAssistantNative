@@ -406,6 +406,7 @@ const EditDishPage: React.FC<EditDishPageProps> = ({
             </View>
             <FlatList
               data={ingredientsList}
+              scrollEnabled={false}
               renderItem={({ item }) => (
                 <View className="w-full h-[40px] p-2 flex-row flex">
                   <Pressable

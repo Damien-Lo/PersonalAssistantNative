@@ -45,11 +45,13 @@ interface CalendarContextType {
     updatedFields: Partial<Event>
   ) => Promise<void>;
   deleteCalendarEvent: (id: string) => Promise<void>;
-  createVirtualEvent: (event: CalendarEvent) => VirtualCalendarEvent;
   formatDateToYYYMMDD: (date: Date) => string;
   removeIngredientsOfEventFromStock: (event: CalendarEvent) => void;
-  toUIEvent: (event: CalendarEvent) => UIWrappedEvent;
-  getEventFromWrapper: (wrap: UIWrappedEvent) => CalendarEvent;
+  getStartOfWeek: (date: Date) => Date;
+  generateDaysInWeek: (date: Date) => Date[];
+  wrapForUI: (event: CalendarEvent, isVirtual: boolean) => UIWrappedEvent;
+  getEventOfDay: (date: Date) => UIWrappedEvent[];
+  normaliseDay: (date: Date) => Date;
 }
 
 //=================================================================
@@ -171,12 +173,60 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
     }
   };
 
-  const createVirtualEvent = (event: CalendarEvent) => {
-    const virtualEvent = {
-      ...event,
-      isVirtual: true,
-      _refid: event._id,
-      _id: `${event._id}_ghost_${event.startDate}`,
+  //SUPPORTING FUNCTIONS
+
+  const getEventOfDay = (date: Date) => {
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+
+    const daysEvent: UIWrappedEvent[] = fullEventList.reduce<UIWrappedEvent[]>(
+      (acc, event) => {
+        const eventDate = new Date(event.startDate);
+        eventDate.setHours(0, 0, 0, 0);
+        const adjustedWeekday = (normalizedDate.getDay() + 6) % 7;
+
+        //If Base Event is part of today
+        if (eventDate.getTime() === normalizedDate.getTime()) {
+          acc.push(wrapForUI(event, false));
+        }
+
+        //If It is a Repeating event who's range falls in today
+        if (
+          event.repeat != "none" &&
+          normalizedDate > eventDate &&
+          normalizedDate <= event.repeatUntil
+        ) {
+          if (event.repeat === "daiy") {
+            acc.push(wrapForUI(event, true));
+          } else if (
+            event.repeat === "weekly" &&
+            event.repeatDays.includes(adjustedWeekday)
+          ) {
+            acc.push(wrapForUI(event, true));
+          } else if (
+            event.repeat === "monthly" &&
+            normalizedDate.getDate() === eventDate.getDate()
+          ) {
+            acc.push(wrapForUI(event, true));
+          }
+        }
+
+        return acc;
+      },
+      []
+    );
+
+    return daysEvent;
+  };
+
+  const wrapForUI = (event: CalendarEvent, isVirtual: boolean) => {
+    const virtualEvent: UIWrappedEvent = {
+      eventObject: event,
+      isVirtual: isVirtual,
+      _baseID: event._id,
+      _wrapID: isVirtual
+        ? `virtual_${event._id}_${event.startDate.toISOString()}`
+        : event._id,
     };
 
     return virtualEvent;
@@ -220,19 +270,31 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
     });
   };
 
-  const toUIEvent = (event: CalendarEvent): UIWrappedEvent => {
-    return {
-      id: event._id,
-      title: event.title,
-      start: event.startDate,
-      end: event.endDate,
-      color: "blue",
-      data: event,
-    };
+  const getStartOfWeek = (date: Date) => {
+    const day = date.getDay();
+    const diff = (day === 0 ? -6 : 1) - day;
+    const monday = new Date(date);
+    monday.setDate(date.getDate() + diff);
+    monday.setHours(0, 0, 0, 0);
+    return monday;
   };
 
-  const getEventFromWrapper = (wrap: UIWrappedEvent): CalendarEvent => {
-    return wrap.data;
+  const generateDaysInWeek = (date: Date) => {
+    const base = getStartOfWeek(date);
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const nextDate = new Date(base);
+      nextDate.setDate(base.getDate() + i);
+      days.push(nextDate);
+    }
+
+    return days;
+  };
+
+  const normaliseDay = (date: Date) => {
+    const result = new Date(date);
+    result.setHours(0, 0, 0, 0);
+    return result;
   };
 
   //=====================================
@@ -249,11 +311,13 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
         createCalendarEvent,
         editCalendarEvent,
         deleteCalendarEvent,
-        createVirtualEvent,
+        wrapForUI,
         formatDateToYYYMMDD,
         removeIngredientsOfEventFromStock,
-        toUIEvent,
-        getEventFromWrapper,
+        getStartOfWeek,
+        generateDaysInWeek,
+        getEventOfDay,
+        normaliseDay,
       }}
     >
       {children}
@@ -270,10 +334,10 @@ const{
     createCalendarEvent,
     editCalendarEvent,
     deleteCalendarEvent,
-    createVirtualEvent,
     formatDateToYYYMMDD,
     removeIngredientsOfEventFromStock,
-    toUIEvent,
-    getEventFromWrapper,
+    getStartOfWeek,
+    generateDaysInWeek,
+    getEventOfDay,
 } = useContext(CalendarContext)
 */

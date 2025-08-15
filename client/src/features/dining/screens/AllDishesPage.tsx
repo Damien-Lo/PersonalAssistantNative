@@ -160,7 +160,8 @@ export default function AllDishesPage() {
             <View className="h-[40px]">
               <Text className="text-lg flex-1">{item.name}</Text>
               <Text className="text-md text-gray-500">
-                {item.restaurant}, {item.description}
+                {item.restaurant} {item.description === "" ? "" : ","}
+                {item.description}
               </Text>
             </View>
           </Pressable>

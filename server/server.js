@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 4000;
 const allowlist = [
   "http://localhost:19006", // Expo web dev
   "http://localhost:4000", // React dev (if you use it)
+
   // 'https://yourapp.com',  // add real domains for prod
 ];
 
@@ -35,6 +36,7 @@ app.use((req, _res, next) => {
 
 // Routes (public)
 app.get("/", (_req, res) => res.send("API is running..."));
+app.get("/ping", (_req, res) => res.json({ ok: true, t: Date.now() }));
 
 app.use("/auth", require("./routes/authRoutes.js"));
 app.use("/api", require("./middleware/requireAuth.js"));

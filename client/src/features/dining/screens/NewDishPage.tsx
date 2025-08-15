@@ -24,7 +24,7 @@ import { MultiSelect } from "react-native-element-dropdown";
 import CustomMultiSelect from "../../../shared/components/CustomMultiSelect";
 import {
   Ingredient,
-  IngredientEntry,
+  IngredientListEntry,
 } from "../../../domain/ingredients/IngredientTypes";
 import {
   DishByCategory,
@@ -61,7 +61,9 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
   const [description, setDescription] = useState<string>("");
   const [category, setCategory] = useState<string | null>("");
   const [meals, setMeals] = useState<string[]>([]);
-  const [ingredientsList, setIngredientsList] = useState<IngredientEntry[]>([]);
+  const [ingredientsList, setIngredientsList] = useState<IngredientListEntry[]>(
+    []
+  );
   const [recipe, setRecipe] = useState<string | null>(null);
   const [restaurant, setRestaurant] = useState<string | null>(null);
   const [calories, setCalories] = useState<number>(0);
@@ -383,6 +385,7 @@ const NewDishPage: React.FC<NewDishPageProps> = ({ passedCloseOverlay }) => {
             </View>
             <FlatList
               data={ingredientsList}
+              scrollEnabled={false}
               renderItem={({ item }) => (
                 <View className="w-full h-[40px] p-2 flex-row flex">
                   <Pressable

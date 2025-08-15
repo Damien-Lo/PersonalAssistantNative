@@ -40,6 +40,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
 
   //CONTEXTS
   const {
+    standardUnits,
     fullIngredientList,
     setFullIngredientList,
     createIngredient,
@@ -158,7 +159,9 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
       brand: brand === null ? "Generic" : brand.trim(),
       portionsAvaliable:
         portionsAvaliable === null ? null : Number(portionsAvaliable),
-      portionUnit: portionUnit.trim(),
+      portionUnit: standardUnits.has(portionUnit.toLowerCase().trim())
+        ? portionUnit.trim()
+        : " " + portionUnit.trim(),
       calories: isNaN(Number(calories)) ? 0 : Number(calories),
       protein: isNaN(Number(protein)) ? 0 : Number(protein),
       carbs: isNaN(Number(carbs)) ? 0 : Number(carbs),

@@ -25,10 +25,8 @@ export type VirtualCalendarEvent = Omit<CalendarEvent, "_id"> & {
 };
 
 export type UIWrappedEvent = {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  color?: string;
-  data: CalendarEvent;
+  eventObject: CalendarEvent;
+  isVirtual: boolean;
+  _baseID: string;
+  _wrapID: string;
 };

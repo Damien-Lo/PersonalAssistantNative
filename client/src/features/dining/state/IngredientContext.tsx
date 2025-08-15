@@ -10,6 +10,7 @@ import {
 //=================================================================
 
 export type IngredientContextType = {
+  standardUnits: Set<string>;
   fullIngredientList: Ingredient[];
   setFullIngredientList: React.Dispatch<React.SetStateAction<Ingredient[]>>;
   createIngredient: (newIngredient: NewIngredient) => Promise<void>;
@@ -39,6 +40,42 @@ export const IngredientProvider: React.FC<React.PropsWithChildren> = ({
   const [fullIngredientList, setFullIngredientList] = useState<Ingredient[]>(
     []
   );
+
+  const standardUnits = new Set([
+    // mass
+    "mg",
+    "g",
+    "kg",
+    "oz",
+    "lb",
+
+    // volume (metric)
+    "ml",
+    "mL",
+    "l",
+    "L",
+    "dl",
+    "dL",
+    "cl",
+    "cL",
+
+    // volume (US customary abbreviations)
+    "tsp",
+    "tbsp",
+    "c",
+    "pt",
+    "qt",
+    "gal",
+
+    // counts / packaging (used in ingredient lines)
+    "ct",
+    "pc",
+    "pcs",
+    "ea",
+
+    // ratios (baker’s %, brines, etc.)
+    "%",
+  ]);
 
   const { user, authFetch } = useAuth();
 
@@ -128,6 +165,7 @@ export const IngredientProvider: React.FC<React.PropsWithChildren> = ({
   return (
     <IngredientContext.Provider
       value={{
+        standardUnits,
         fullIngredientList,
         setFullIngredientList,
         createIngredient,
