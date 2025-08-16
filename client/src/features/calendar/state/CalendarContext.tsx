@@ -176,48 +176,79 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
   //SUPPORTING FUNCTIONS
 
   const getEventOfDay = (date: Date) => {
-    const normalizedDate = new Date(date);
-    normalizedDate.setHours(0, 0, 0, 0);
-
+    const normalisedTargetDate = normaliseDay(date);
     const daysEvent: UIWrappedEvent[] = fullEventList.reduce<UIWrappedEvent[]>(
       (acc, event) => {
-        const eventDate = new Date(event.startDate);
-        eventDate.setHours(0, 0, 0, 0);
-        const adjustedWeekday = (normalizedDate.getDay() + 6) % 7;
+        const eventNormalisedStartDate = normaliseDay(
+          new Date(event.startDate)
+        );
+        const targetWeekDay = normalisedTargetDate.getDay() % 7;
+        const repeatEndDate = event.repeatUntil
+          ? new Date(event.repeatUntil)
+          : null;
 
-        //If Base Event is part of today
+        console.log("eventNormalisedStartDate");
+        console.log(eventNormalisedStartDate);
+
+        console.log("normalisedTargetDate");
+        console.log(normalisedTargetDate);
+
+        // If Day is Before Stary Date or is explicity excluded don't add to acc
         if (
-          eventDate.getTime() === normalizedDate.getTime() ||
-          event.repeatUntil === null
+          normalisedTargetDate.getTime() < eventNormalisedStartDate.getTime() ||
+          event.skipRenderDays.includes(normalisedTargetDate)
         ) {
-          acc.push(wrapForUI(event, false));
-        }
-
-        //TODO
-        if (event.repeat === "none" || event.repeatUntil === null) {
+          console.log("Immediate Leave");
           return acc;
         }
-        //If It is a Repeating event who's range falls in today
+
+        // If Day is Directly equal to start date no matter (after first check) what add to acc
         if (
-          event.repeat != "none" &&
-          normalizedDate > eventDate &&
-          normalizedDate <= event.repeatUntil
+          normalisedTargetDate.getTime() === eventNormalisedStartDate.getTime()
         ) {
-          if (event.repeat === "daily") {
+          console.log("Added");
+          acc.push(wrapForUI(event, false));
+          return acc;
+        }
+
+        //For Repeating Events
+        if (event.repeat != "none") {
+          //If Repeat Forever, Add
+          if (repeatEndDate === null) {
             acc.push(wrapForUI(event, true));
-          } else if (
+            return acc;
+          }
+
+          //If Repeat Daily and Below end date add
+          if (
+            event.repeat === "daily" &&
+            normalisedTargetDate.getTime() < repeatEndDate.getTime()
+          ) {
+            acc.push(wrapForUI(event, true));
+            return acc;
+          }
+          // If repeat weekly and weekdays are included in specified repeat days add
+          else if (
             event.repeat === "weekly" &&
-            event.repeatDays.includes(adjustedWeekday)
+            normalisedTargetDate.getTime() < repeatEndDate.getTime() &&
+            event.repeatDays.includes(targetWeekDay)
           ) {
             acc.push(wrapForUI(event, true));
-          } else if (
+            return acc;
+          }
+          // If Repeat Monltyh and same date number add
+          else if (
             event.repeat === "monthly" &&
-            normalizedDate.getDate() === eventDate.getDate()
+            normalisedTargetDate.getTime() < repeatEndDate.getTime() &&
+            normalisedTargetDate.getDate() ===
+              eventNormalisedStartDate.getDate()
           ) {
             acc.push(wrapForUI(event, true));
+            return acc;
           }
         }
 
+        //Else Return
         return acc;
       },
       []
@@ -231,9 +262,7 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
       eventObject: event,
       isVirtual: isVirtual,
       _baseID: event._id,
-      _wrapID: isVirtual
-        ? `virtual_${event._id}_${event.startDate.toISOString()}`
-        : event._id,
+      _wrapID: isVirtual ? `virtual_${event._id}` : event._id,
     };
 
     return virtualEvent;

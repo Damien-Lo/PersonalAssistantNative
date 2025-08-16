@@ -23,6 +23,7 @@ import {
 } from "../../../domain/calendar/CalendarTypes";
 import { CalendarContext } from "../state/CalendarContext";
 import NewCalendarEventPage from "./NewCalendarEventPage";
+import EditCalendarEventPage from "./EditCalendarEventPage";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 export default function CalendarFullViewPage() {
@@ -95,7 +96,7 @@ export default function CalendarFullViewPage() {
   //==========================
 
   const testFunc = () => {
-    console.log(eventGroups);
+    console.log(selectedDayEvents);
   };
 
   useEffect(() => {
@@ -111,7 +112,8 @@ export default function CalendarFullViewPage() {
       // ensure group is start-time sorted
       const g = [...group].sort(
         (a, b) =>
-          a.eventObject.startDate.getTime() - b.eventObject.startDate.getTime()
+          new Date(a.eventObject.startDate).getTime() -
+          new Date(b.eventObject.startDate).getTime()
       );
 
       const placed: (UIWrappedEvent & { col: number })[] = [];
@@ -142,8 +144,6 @@ export default function CalendarFullViewPage() {
     let windowEnd = -Infinity;
 
     for (const ev of sorted) {
-      console.log("Looping");
-      console.log(ev);
       const s = new Date(ev.eventObject.startDate).getTime();
       const e = new Date(ev.eventObject.endDate).getTime();
       if (!current.length) {
@@ -163,6 +163,22 @@ export default function CalendarFullViewPage() {
     const placedGroups = groups.map(placeColumns);
     setEventGroups(placedGroups);
   }, [selectedDayEvents]);
+
+  const shiftWeekForward = () => {
+    setViewedDay((prev) => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() + 7);
+      return d;
+    });
+  };
+
+  const shiftWeekBackward = () => {
+    setViewedDay((prev) => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() - 7);
+      return d;
+    });
+  };
 
   //===========================
   //         UI Component
@@ -204,7 +220,7 @@ export default function CalendarFullViewPage() {
           {/* Prev aligned with numbers */}
           <Pressable
             className="basis-0 grow h-12 items-center justify-center"
-            onPress={() => console.log("")}
+            onPress={() => shiftWeekBackward()}
             hitSlop={8}
           >
             <Text>Prev</Text>
@@ -242,7 +258,7 @@ export default function CalendarFullViewPage() {
           {/* Next aligned with numbers */}
           <Pressable
             className="basis-0 grow h-12 items-center justify-center"
-            onPress={() => console.log("")}
+            onPress={() => shiftWeekForward()}
             hitSlop={8}
           >
             <Text>Next</Text>
@@ -333,6 +349,30 @@ export default function CalendarFullViewPage() {
           <NewCalendarEventPage
             passedCloseOverlay={() => setShowNewEventOverlay(false)}
           />
+        </View>
+      </Modal>
+
+      <Modal
+        visible={selectedEvent != null}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedEvent(null)}
+      >
+        {/* Backdrop */}
+        <Pressable
+          className="flex-1 bg-black/40"
+          onPress={() => setSelectedEvent(null)}
+        />
+
+        {/* Sheet content */}
+        <View className="absolute bottom-0 left-[2.5%] right-0 h-[95%] w-[95%] bg-white rounded-t-2xl p-4">
+          {selectedEvent && (
+            <EditCalendarEventPage
+              selectedDay={selectedDay}
+              passedEvent={selectedEvent}
+              passedCloseOverlay={() => setSelectedEvent(null)}
+            />
+          )}
         </View>
       </Modal>
     </View>

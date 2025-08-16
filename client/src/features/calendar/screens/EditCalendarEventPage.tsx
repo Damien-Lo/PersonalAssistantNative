@@ -17,15 +17,23 @@ import { Dish, DishListEntry } from "../../../domain/dishes/DishTypes";
 import CreatableSelector from "../../../shared/components/CreatableSelector";
 import { CalendarContext } from "../state/CalendarContext";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { NewCalendarEvent } from "../../../domain/calendar/CalendarTypes";
+import {
+  CalendarEvent,
+  NewCalendarEvent,
+  UIWrappedEvent,
+} from "../../../domain/calendar/CalendarTypes";
 
-interface NewCalendarEventProps {
+interface EditCalendarEventProps {
+  selectedDay: Date;
+  passedEvent: UIWrappedEvent;
   passedCloseOverlay: () => void;
 }
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
+const EditCalendarEventPage: React.FC<EditCalendarEventProps> = ({
+  selectedDay,
+  passedEvent,
   passedCloseOverlay,
 }) => {
   //=====================================
@@ -56,23 +64,52 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
     getStartOfWeek,
     generateDaysInWeek,
     getEventOfDay,
+    normaliseDay,
   } = useContext(CalendarContext);
 
   //STATE VARIABLES
   //Event Object Variables
-  const [type, setType] = useState<string>("General Event");
-  const [title, setTitle] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(new Date());
-  const [repeat, setRepeat] = useState<string>("none");
-  const [repeatUntil, setRepeatUntil] = useState<Date | null>(null);
-  const [repeatDays, setRepeatDays] = useState<number[]>([]);
-  const [skipRenderDays, setSkipRenderDays] = useState<Date[]>([]);
-  const [attendees, setAttendees] = useState<string>("");
+  const [type, setType] = useState<string>(passedEvent.eventObject.type ?? "");
+  const [title, setTitle] = useState<string>(
+    passedEvent.eventObject.title ?? ""
+  );
+  const [description, setDescription] = useState<string>(
+    passedEvent.eventObject.description ?? ""
+  );
+  const [startDate, setStartDate] = useState<Date>(
+    passedEvent.eventObject.startDate
+      ? new Date(passedEvent.eventObject.startDate)
+      : new Date()
+  );
+  const [endDate, setEndDate] = useState<Date>(
+    passedEvent.eventObject.endDate
+      ? new Date(passedEvent.eventObject.endDate)
+      : new Date()
+  );
+  const [repeat, setRepeat] = useState<string>(
+    passedEvent.eventObject.repeat ?? "none"
+  );
+  const [repeatUntil, setRepeatUntil] = useState<Date | null>(
+    passedEvent.eventObject.repeatUntil
+      ? new Date(passedEvent.eventObject.repeatUntil)
+      : new Date()
+  );
+  const [repeatDays, setRepeatDays] = useState<number[]>(
+    passedEvent.eventObject.repeatDays ?? []
+  );
+  const [skipRenderDays, setSkipRenderDays] = useState<Date[]>(
+    passedEvent.eventObject.skipRenderDays ?? []
+  );
+  const [attendees, setAttendees] = useState<string>(
+    passedEvent.eventObject.attendees ?? ""
+  );
 
-  const [meal, setMeal] = useState<string | null>(null);
-  const [dishList, setDishList] = useState<DishListEntry[]>([]);
+  const [meal, setMeal] = useState<string | null>(
+    passedEvent.eventObject.meal ?? null
+  );
+  const [dishList, setDishList] = useState<DishListEntry[]>(
+    passedEvent.eventObject.dishList ?? []
+  );
 
   //Supporting Variables
   const navigation = useNavigation<Nav>();
@@ -84,8 +121,12 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
   >([]);
   const [currentDish, setCurrentDish] = useState<Dish | null>(null);
 
+  const originalStartDate: Date = passedEvent.eventObject.startDate;
+
   const [latestRepeatUntilDate, setLatestRepeatUntilDate] = useState<Date>(
-    new Date()
+    passedEvent.eventObject.repeatUntil
+      ? new Date(passedEvent.eventObject.repeatUntil)
+      : new Date()
   );
 
   //=====================================
@@ -93,7 +134,7 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
   //=====================================
 
   const testFunc = () => {
-    console.log(repeatDays);
+    console.log(dishList);
   };
 
   useEffect(() => {
@@ -148,7 +189,25 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
       meal: meal,
       dishList: dishList,
     };
-    createCalendarEvent(newEvent);
+
+    if (!passedEvent.isVirtual) {
+      editCalendarEvent(passedEvent.eventObject._id, newEvent);
+    } else {
+      console.log(normaliseDay(selectedDay));
+      const editedOriginal = {
+        ...passedEvent.eventObject,
+        skipRenderDays: [
+          ...(passedEvent.eventObject.skipRenderDays || []),
+          normaliseDay(selectedDay),
+        ],
+      };
+
+      console.log("Edited Original: ");
+      console.log(editedOriginal);
+
+      editCalendarEvent(passedEvent.eventObject._id, editedOriginal);
+      createCalendarEvent(newEvent);
+    }
   };
 
   //=====================================
@@ -159,7 +218,7 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
       <ScrollView>
         <View className="flex-1 p-1">
           {/* Header Bar */}
-          <View className="flex flex-row justify-between items-center mb-6">
+          <View className="flex flex-row justify-between items-center mb-2">
             <Pressable
               className="flex items-center justify-center pr-4"
               onPress={() => {
@@ -184,7 +243,7 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
               <Text className="text-red-500">Cancel</Text>
             </Pressable>
             <Text className="text-xl font-bold text-center">
-              New Events Page
+              Edit Events Page {passedEvent.isVirtual ? "(Virtual)" : ""}
             </Text>
             <Pressable
               className="flex items-center justify-center"
@@ -196,6 +255,15 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
               <Text className="text-blue-500 ">Save</Text>
             </Pressable>
           </View>
+
+          {passedEvent.isVirtual && (
+            <View className="w-full h-[5-px] mb-5 items-center justify-center">
+              <Text className="text-sm text-center">
+                Original Event on :{" "}
+                {new Date(passedEvent.eventObject.startDate).toDateString()}
+              </Text>
+            </View>
+          )}
 
           {/* Event Type */}
           <View className="mb-4">
@@ -477,6 +545,18 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
             </View>
           )}
 
+          <View className="w-full items-center justify-center">
+            <Pressable
+              className="items-center justify-center w-[250px] h-[50px] rounded-full bg-red-300"
+              onPress={() => {
+                deleteCalendarEvent(passedEvent.eventObject._id);
+                passedCloseOverlay();
+              }}
+            >
+              <Text className="text-xl font-bold">Delete</Text>
+            </Pressable>
+          </View>
+
           {/* Buffer Space */}
           {true && <View className="w-full h-[300px]"></View>}
 
@@ -487,4 +567,4 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
   );
 };
 
-export default NewCalendarEventPage;
+export default EditCalendarEventPage;

@@ -11,6 +11,7 @@ export type CalendarEvent = {
   repeatDays: number[];
   skipRenderDays: Date[];
   description: string;
+  attendees: string;
   meal: string | null;
   dishList: DishListEntry[];
 };

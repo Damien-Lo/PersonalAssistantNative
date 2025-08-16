@@ -7,7 +7,7 @@ type EventBoxProps = {
 
 const EventBox: React.FC<EventBoxProps> = ({ event }) => {
   return (
-    <View className="w-full h-full rounded-lg bg-yellow-500 p-2">
+    <View className="w-full h-full rounded-lg bg-yellow-500 p-2 shadow-sm border-gray-100">
       <Text className="text-white font-bold">{event.title}</Text>
     </View>
   );
