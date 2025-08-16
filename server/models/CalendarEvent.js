@@ -9,10 +9,6 @@ const calendarEventSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    isRendered: {
-      type: Boolean,
-      default: true,
-    },
 
     type: {
       type: String,
@@ -40,23 +36,28 @@ const calendarEventSchema = new mongoose.Schema(
       type: String,
       enum: ["none", "daily", "weekly", "monthly"],
       default: "none",
+      required: true,
     },
 
     repeatUntil: {
       type: Date,
+      required: false,
     },
 
     repeatDays: {
       type: [Number],
+      required: true,
     },
 
     skipRenderDays: {
       type: [Date],
       default: [],
+      required: true,
     },
 
     description: {
       type: String,
+      requried: true,
     },
 
     attendees: {
@@ -68,7 +69,6 @@ const calendarEventSchema = new mongoose.Schema(
       required: false,
       type: String,
       enum: ["Breakfast", "Lunch", "Dinner", "Snack"],
-      default: undefined,
     },
     dishList: {
       type: [
@@ -85,6 +85,7 @@ const calendarEventSchema = new mongoose.Schema(
         },
       ],
       default: [],
+      required: false,
     },
   },
   { timestamps: true }

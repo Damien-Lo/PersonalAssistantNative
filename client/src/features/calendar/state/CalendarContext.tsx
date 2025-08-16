@@ -186,17 +186,24 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
         const adjustedWeekday = (normalizedDate.getDay() + 6) % 7;
 
         //If Base Event is part of today
-        if (eventDate.getTime() === normalizedDate.getTime()) {
+        if (
+          eventDate.getTime() === normalizedDate.getTime() ||
+          event.repeatUntil === null
+        ) {
           acc.push(wrapForUI(event, false));
         }
 
+        //TODO
+        if (event.repeat === "none" || event.repeatUntil === null) {
+          return acc;
+        }
         //If It is a Repeating event who's range falls in today
         if (
           event.repeat != "none" &&
           normalizedDate > eventDate &&
           normalizedDate <= event.repeatUntil
         ) {
-          if (event.repeat === "daiy") {
+          if (event.repeat === "daily") {
             acc.push(wrapForUI(event, true));
           } else if (
             event.repeat === "weekly" &&

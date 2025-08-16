@@ -182,7 +182,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView>
-        <View className="flex-1 p-2">
+        <View className="flex-1 p-1">
           {/* Header Bar */}
           <View className="flex flex-row justify-between items-center mb-6">
             <Pressable
@@ -281,7 +281,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
 
             <View className="flex flex-row items-center h-[50px]">
               <TextInput
-                className="border h-full w-[240px] mr-4 pl-2"
+                className="border h-full w-[230px] mr-2 pl-2"
                 placeholder=""
                 keyboardType="decimal-pad"
                 value={portionsAvaliable ? portionsAvaliable : ""}
@@ -290,7 +290,7 @@ const NewIngredientPage: React.FC<NewIngredientPageProps> = ({
                 }}
               />
 
-              <View className="h-full w-[120px]">
+              <View className="h-full w-[100px]">
                 <CreatableSelector
                   options={Array.from(unitOptions)}
                   valueToSet={portionUnit}

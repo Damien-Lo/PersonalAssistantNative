@@ -59,7 +59,7 @@ export default function MainPageSelector({
               <Pressable
                 className="absolute left-1/2 -translate-x-1/2 w-[70px] h-[70px] bg-white rounded-full shadow items-center justify-center"
                 onPress={() => {
-                  navigation.navigate("CalendarMainPage");
+                  navigation.navigate("CalendarFullViewPage");
                   setMenuVisible(false);
                 }}
               >

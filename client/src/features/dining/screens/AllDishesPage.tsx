@@ -13,10 +13,10 @@ import { useNavigation } from "@react-navigation/native";
 import { IngredientContext } from "../state/IngredientContext";
 import SearchBar from "../../../shared/components/SearchBar";
 import EditIngredientPage from "./EditIngredientPage";
-import { DishContext } from "../state/DishContext";
 import NewDishPage from "./NewDishPage";
 import EditDishPage from "./EditDishPage";
 import { Dish, DishByCategory } from "../../../domain/dishes/DishTypes";
+import { DishContext } from "../state/DishContext";
 
 export default function AllDishesPage() {
   const navigator = useNavigation();
@@ -183,7 +183,7 @@ export default function AllDishesPage() {
         />
 
         {/* Sheet content */}
-        <View className="absolute bottom-0 left-[2.5%] right-0 h-[90%] w-[95%] bg-white rounded-t-2xl p-4">
+        <View className="absolute bottom-0 left-[2.5%] right-0 h-[95%] w-[95%] bg-white rounded-t-2xl p-4">
           <NewDishPage
             passedCloseOverlay={() => setShowNewDishOverlay(false)}
           />

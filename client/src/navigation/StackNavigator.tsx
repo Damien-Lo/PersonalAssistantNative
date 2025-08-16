@@ -9,7 +9,8 @@ import AllDishesPage from "../features/dining/screens/AllDishesPage";
 import LoginPage from "../features/auth/screens/LoginPage";
 import CreateUserPage from "../features/auth/screens/CreateUserPage";
 import SettingsPage from "../features/home/screens/SettingsPage";
-import CalendarMainPage from "../features/calendar/screens/CalendarMainPage";
+import CalendarFullViewPage from "../features/calendar/screens/CalendarFullViewPage";
+import CalendarTabs from "./CalendarTabs";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -21,7 +22,7 @@ export default function StackNavigator() {
       <Stack.Screen name="SettingsPage" component={SettingsPage} />
       <Stack.Screen name="HomePage" component={HomePage} />
 
-      <Stack.Screen name="CalendarMainPage" component={CalendarMainPage} />
+      <Stack.Screen name="CalendarFullViewPage" component={CalendarTabs} />
 
       <Stack.Screen name="DiningPage" component={DiningTabs} />
       <Stack.Screen name="AllIngredientsPage" component={AllIngredientsPage} />

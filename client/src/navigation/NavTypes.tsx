@@ -5,7 +5,7 @@ export type RootStackParamList = {
   SettingsPage: undefined;
   HomePage: undefined;
 
-  CalendarMainPage: undefined;
+  CalendarFullViewPage: undefined;
 
   DiningPage: undefined;
   AllIngredientsPage: undefined;

@@ -2,17 +2,16 @@ import { DishListEntry } from "../dishes/DishTypes";
 
 export type CalendarEvent = {
   _id: string;
-  isRenderd: boolean;
   type: string;
   title: string;
   startDate: Date;
   endDate: Date;
   repeat: string;
-  repeatUntil: Date;
+  repeatUntil: Date | null;
   repeatDays: number[];
   skipRenderDays: Date[];
   description: string;
-  meal: string;
+  meal: string | null;
   dishList: DishListEntry[];
 };
 
@@ -30,3 +29,5 @@ export type UIWrappedEvent = {
   _baseID: string;
   _wrapID: string;
 };
+
+export type PlacedUIEvent = UIWrappedEvent & { col: number; cols: number };
