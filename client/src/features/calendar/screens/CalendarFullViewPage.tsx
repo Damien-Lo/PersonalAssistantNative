@@ -105,7 +105,9 @@ export default function CalendarFullViewPage() {
   //         FUNCTIONS
   //==========================
 
-  const testFunc = () => {};
+  const testFunc = () => {
+    console.log(selectedDay);
+  };
 
   /**
    * useEffect
@@ -189,6 +191,10 @@ export default function CalendarFullViewPage() {
     setEventGroups(placedGroups);
   }, [selectedDayEvents]);
 
+  useEffect(() => {
+    setViewedDay(selectedDay);
+  }, [selectedDay]);
+
   /**
    * shiftWeekForward
    * Shift the week bar forward a week
@@ -249,67 +255,65 @@ export default function CalendarFullViewPage() {
         </View>
 
         {/* Day Selector */}
-        <View className="w-full mt-3 flex-row items-end">
-          {/* Prev aligned with numbers */}
-          <Pressable
-            className="basis-0 grow h-12 items-center justify-center"
-            onPress={() => shiftWeekBackward()}
-            hitSlop={8}
-          >
-            <Text>Prev</Text>
-          </Pressable>
+        {!expandMonthView && (
+          <View className="w-full mt-3 flex-row items-end">
+            {/* Prev aligned with numbers */}
+            <Pressable
+              className="basis-0 grow h-12 items-center justify-center"
+              onPress={() => shiftWeekBackward()}
+              hitSlop={8}
+            >
+              <Text>Prev</Text>
+            </Pressable>
 
-          {daysInWeek.map((date, idx) => {
-            const active = date.toDateString() === selectedDay.toDateString();
-            return (
-              <Pressable
-                key={date.toISOString()}
-                onPress={() => setSelectedDay(date)}
-                className="basis-0 grow items-center"
-                hitSlop={8}
-              >
-                {/* weekday label with small gap */}
-                <Text className=" text-neutral-600 mb-1">
-                  {daysOfWeekLabels[idx]}
-                </Text>
-
-                {/* number pill only */}
-                <View
-                  className={`h-12 w-12 rounded-full items-center justify-center
-            ${active ? "bg-blue-600" : "bg-transparent"}`}
+            {daysInWeek.map((date, idx) => {
+              const active = date.toDateString() === selectedDay.toDateString();
+              return (
+                <Pressable
+                  key={date.toISOString()}
+                  onPress={() => setSelectedDay(date)}
+                  className="basis-0 grow items-center"
+                  hitSlop={8}
                 >
-                  <Text
-                    className={`font-semibold ${active ? "text-white" : "text-black"}`}
-                  >
-                    {date.getDate()}
+                  {/* weekday label with small gap */}
+                  <Text className=" text-neutral-600 mb-1">
+                    {daysOfWeekLabels[idx]}
                   </Text>
-                </View>
-              </Pressable>
-            );
-          })}
 
-          {/* Next aligned with numbers */}
-          <Pressable
-            className="basis-0 grow h-12 items-center justify-center"
-            onPress={() => shiftWeekForward()}
-            hitSlop={8}
-          >
-            <Text>Next</Text>
-          </Pressable>
-        </View>
+                  {/* number pill only */}
+                  <View
+                    className={`h-12 w-12 rounded-full items-center justify-center
+            ${active ? "bg-blue-600" : "bg-transparent"}`}
+                  >
+                    <Text
+                      className={`font-semibold ${active ? "text-white" : "text-black"}`}
+                    >
+                      {date.getDate()}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+
+            {/* Next aligned with numbers */}
+            <Pressable
+              className="basis-0 grow h-12 items-center justify-center"
+              onPress={() => shiftWeekForward()}
+              hitSlop={8}
+            >
+              <Text>Next</Text>
+            </Pressable>
+          </View>
+        )}
 
         {/* Expanded Month View */}
         <View className="w-full items-center mt-2">
           {expandMonthView && (
             <View className="w-full h-[220px]">
               <MonthView
-                referenceDate={selectedDay} // or `new Date()`
-                selectedDate={selectedDay}
-                onSelectDate={(d) => {
-                  setSelectedDay(d);
-                  // optional: collapse after pick
-                  // setExpandMonthView(false);
-                }}
+                referenceDate={viewedDay}
+                selectedDate={selectedDay} // highlighted day
+                onSelectDate={(d) => setSelectedDay(d)}
               />
             </View>
           )}
@@ -378,13 +382,16 @@ export default function CalendarFullViewPage() {
           )}
         </View>
         {/* Current Time Line */}
-        <View
-          className="absolute left-12 right-0 flex flex-row items-center justify-center"
-          style={{ top }}
-        >
-          <View className="absolute left-0 w-2 h-2 rounded-full bg-red-500 -translate-x-1/2 top-[-2px]" />
-          <View className="ml-2 h-[2px] bg-red-500 w-full " />
-        </View>
+        {normaliseDay(selectedDay).getTime() ===
+          normaliseDay(new Date()).getTime() && (
+          <View
+            className="absolute left-12 right-0 flex flex-row items-center justify-center"
+            style={{ top }}
+          >
+            <View className="absolute left-0 w-2 h-2 rounded-full bg-red-500 -translate-x-1/2 top-[-2px]" />
+            <View className="ml-2 h-[2px] bg-red-500 w-full " />
+          </View>
+        )}
       </ScrollView>
 
       {/* New Button*/}
