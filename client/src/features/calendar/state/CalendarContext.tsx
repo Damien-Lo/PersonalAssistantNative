@@ -187,18 +187,11 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
           ? new Date(event.repeatUntil)
           : null;
 
-        console.log("eventNormalisedStartDate");
-        console.log(eventNormalisedStartDate);
-
-        console.log("normalisedTargetDate");
-        console.log(normalisedTargetDate);
-
         // If Day is Before Stary Date or is explicity excluded don't add to acc
         if (
           normalisedTargetDate.getTime() < eventNormalisedStartDate.getTime() ||
           event.skipRenderDays.includes(normalisedTargetDate)
         ) {
-          console.log("Immediate Leave");
           return acc;
         }
 
@@ -206,7 +199,6 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
         if (
           normalisedTargetDate.getTime() === eventNormalisedStartDate.getTime()
         ) {
-          console.log("Added");
           acc.push(wrapForUI(event, false));
           return acc;
         }

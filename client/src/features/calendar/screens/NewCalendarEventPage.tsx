@@ -88,6 +88,10 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
     new Date()
   );
 
+  const [mealOptions, setMealOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+
   //=====================================
   //              FUNCTIONS
   //=====================================
@@ -104,10 +108,15 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
     setTypeOptions(eventTypeOption);
 
     const dishOption: { label: string; value: Dish }[] = [];
+    const mealSet = new Set<string>();
     fullDishList.forEach((dish) => {
-      dishOption.push({ label: dish.name, value: dish });
+      dishOptions.push({ label: dish.name, value: dish });
+
+      dish.meals.forEach((meal) => mealSet.add(meal));
     });
-    setDishOptions(dishOption);
+
+    setDishOptions(dishOptions);
+    setMealOptions([...mealSet].map((meal) => ({ label: meal, value: meal })));
   }, [fullDishList]);
 
   const removeIngredient = (dishEntry: DishListEntry) => {
@@ -208,6 +217,20 @@ const NewCalendarEventPage: React.FC<NewCalendarEventProps> = ({
               ></CreatableSelector>
             </View>
           </View>
+
+          {/* Meal */}
+          {type === "Dining Event" && (
+            <View className="mb-4">
+              <Text className="text-xl font-bold mb-2">Meal</Text>
+              <View className="w-full h-[50px]">
+                <CreatableSelector
+                  options={mealOptions}
+                  valueToSet={meal}
+                  setValueFunc={setMeal}
+                ></CreatableSelector>
+              </View>
+            </View>
+          )}
 
           {/* Event Title */}
           <View className="mb-4">

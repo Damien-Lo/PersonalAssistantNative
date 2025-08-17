@@ -9,6 +9,7 @@ import {
   SafeAreaView,
 } from "react-native-safe-area-context";
 import {
+  Modal,
   Pressable,
   ScrollView,
   Switch,
@@ -23,6 +24,7 @@ import {
   Ingredient,
   NewIngredient,
 } from "../../../domain/ingredients/IngredientTypes";
+import ChoicePopUpOverlay from "../../../shared/components/ChoicePopUpOverlay";
 
 type EditIngredientPageProps = {
   passedIngredient: Ingredient;
@@ -59,6 +61,7 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
     deleteDish,
     updateDishesWithIngredient,
     calculateNutrition,
+    deleteDishesWithIngredient,
   } = useContext(DishContext);
 
   //STATE VARIABLES
@@ -118,30 +121,22 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
       : new Date()
   );
 
+  const [showConfirmModule, setShowConfirmModule] = useState<boolean>(false);
+
   //=====================================
   //              FUNCTIONS
   //=====================================
 
   const testFunc = () => {
-    // const newIngredient: NewIngredient = {
-    //   name: ingredientName,
-    //   description: description,
-    //   category: category === null ? "Uncategorised" : category,
-    //   expiryDate: expiryDate ? new Date(expiryDate) : null,
-    //   brand: brand === null ? "Generic" : brand,
-    //   portionsAvaliable:
-    //     portionsAvaliable === null ? null : Number(portionsAvaliable),
-    //   portionUnit: portionUnit,
-    //   calories: isNaN(Number(calories)) ? 0 : Number(calories),
-    //   protein: isNaN(Number(protein)) ? 0 : Number(protein),
-    //   carbs: isNaN(Number(carbs)) ? 0 : Number(carbs),
-    //   fats: isNaN(Number(fats)) ? 0 : Number(fats),
-    //   fiber: isNaN(Number(fiber)) ? 0 : Number(fiber),
-    //   sodium: isNaN(Number(sodium)) ? 0 : Number(sodium),
-    // };
-
-    // console.log(newIngredient);
     console.log(portionUnit);
+  };
+
+  const testOptionOne = () => {
+    console.log("Option 1 Clikced");
+  };
+
+  const testOptionTwo = () => {
+    console.log("Option 2 Clikced");
   };
 
   //Navigate Functions
@@ -212,6 +207,8 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
 
   const handleDelete = async () => {
     deleteIngredient(passedIngredient._id);
+    deleteDishesWithIngredient(passedIngredient._id);
+    passedCloseOverlay();
   };
 
   //=====================================
@@ -458,8 +455,7 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
             <Pressable
               className="bg-red-300 w-[150px] h-[50px] rounded-full items-center justify-center"
               onPress={() => {
-                handleDelete();
-                passedCloseOverlay();
+                setShowConfirmModule(true);
               }}
             >
               <Text className="text-lg">Delete</Text>
@@ -470,6 +466,39 @@ const EditIngredientPage: React.FC<EditIngredientPageProps> = ({
           {true && <View className="w-full h-[300px]"></View>}
         </View>
       </ScrollView>
+
+      <Modal
+        visible={showConfirmModule}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowConfirmModule(false)}
+      >
+        {/* Backdrop */}
+        <Pressable
+          className="flex-1 bg-black/40"
+          onPress={() => setShowConfirmModule(false)}
+        />
+
+        <ChoicePopUpOverlay
+          header="Are you sure?"
+          description="Deleting an ingredient removes it from all associated dishes and events."
+          options={[
+            {
+              label: "Back",
+              bgColour: "bg-blue-600",
+              fontColour: "text-white",
+              function: () => setShowConfirmModule(false),
+            },
+            {
+              label: "Delete",
+              bgColour: "bg-red-500",
+              fontColour: "text-white",
+              function: handleDelete,
+            },
+          ]}
+          closeOverlay={() => setShowConfirmModule(false)}
+        />
+      </Modal>
     </SafeAreaView>
   );
 };

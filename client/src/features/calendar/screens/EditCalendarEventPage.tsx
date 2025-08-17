@@ -129,12 +129,16 @@ const EditCalendarEventPage: React.FC<EditCalendarEventProps> = ({
       : new Date()
   );
 
+  const [mealOptions, setMealOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+
   //=====================================
   //              FUNCTIONS
   //=====================================
 
   const testFunc = () => {
-    console.log(dishList);
+    console.log(skipRenderDays);
   };
 
   useEffect(() => {
@@ -145,10 +149,15 @@ const EditCalendarEventPage: React.FC<EditCalendarEventProps> = ({
     setTypeOptions(eventTypeOption);
 
     const dishOption: { label: string; value: Dish }[] = [];
+    const mealSet = new Set<string>();
     fullDishList.forEach((dish) => {
-      dishOption.push({ label: dish.name, value: dish });
+      dishOptions.push({ label: dish.name, value: dish });
+
+      dish.meals.forEach((meal) => mealSet.add(meal));
     });
-    setDishOptions(dishOption);
+
+    setDishOptions(dishOptions);
+    setMealOptions([...mealSet].map((meal) => ({ label: meal, value: meal })));
   }, [fullDishList]);
 
   const removeIngredient = (dishEntry: DishListEntry) => {
@@ -193,7 +202,6 @@ const EditCalendarEventPage: React.FC<EditCalendarEventProps> = ({
     if (!passedEvent.isVirtual) {
       editCalendarEvent(passedEvent.eventObject._id, newEvent);
     } else {
-      console.log(normaliseDay(selectedDay));
       const editedOriginal = {
         ...passedEvent.eventObject,
         skipRenderDays: [
@@ -201,9 +209,6 @@ const EditCalendarEventPage: React.FC<EditCalendarEventProps> = ({
           normaliseDay(selectedDay),
         ],
       };
-
-      console.log("Edited Original: ");
-      console.log(editedOriginal);
 
       editCalendarEvent(passedEvent.eventObject._id, editedOriginal);
       createCalendarEvent(newEvent);
@@ -276,6 +281,20 @@ const EditCalendarEventPage: React.FC<EditCalendarEventProps> = ({
               ></CreatableSelector>
             </View>
           </View>
+
+          {/* Meal */}
+          {type === "Dining Event" && (
+            <View className="mb-4">
+              <Text className="text-xl font-bold mb-2">Meal</Text>
+              <View className="w-full h-[50px]">
+                <CreatableSelector
+                  options={mealOptions}
+                  valueToSet={meal}
+                  setValueFunc={setMeal}
+                ></CreatableSelector>
+              </View>
+            </View>
+          )}
 
           {/* Event Title */}
           <View className="mb-4">

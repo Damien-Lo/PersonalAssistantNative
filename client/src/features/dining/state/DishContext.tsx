@@ -20,6 +20,7 @@ interface DishContextType {
     ingredient_id: string,
     updatedIngredient: NewIngredient
   ) => void;
+  deleteDishesWithIngredient: (ingredient_id: string) => void;
   calculateNutrition: (
     ingredientList: { amount: number; ingredientObject: Ingredient }[]
   ) => {
@@ -134,7 +135,7 @@ export const DishProvider: React.FC<React.PropsWithChildren> = ({
     ingredient_id: string,
     updatedIngredient: NewIngredient
   ) => {
-    const changedDishes = [];
+    // const changedDishes = [];
     setFullDishList((prev) =>
       prev.map((dish) => {
         const usesIngredient = dish.ingredientsList.some(
@@ -162,7 +163,34 @@ export const DishProvider: React.FC<React.PropsWithChildren> = ({
 
         //Update Backend Too
         editDish(newDish._id, newDish);
-        changedDishes.push(newDish);
+        // changedDishes.push(newDish);
+        return newDish;
+      })
+    );
+  };
+
+  const deleteDishesWithIngredient = (ingredient_id: string) => {
+    // const changedDishes = [];
+    setFullDishList((prev) =>
+      prev.map((dish) => {
+        const usesIngredient = dish.ingredientsList.some(
+          (entry) => entry.ingredientObject._id === ingredient_id
+        );
+        if (!usesIngredient) return dish;
+
+        const newIngredientList = dish.ingredientsList.filter((entry) => {
+          return entry.ingredientObject._id !== ingredient_id;
+        });
+
+        const newDish = {
+          ...dish,
+          ...calculateNutrition(newIngredientList),
+          ingredientsList: newIngredientList,
+        };
+
+        //Update Backend Too
+        editDish(newDish._id, newDish);
+        // changedDishes.push(newDish);
         return newDish;
       })
     );
@@ -218,6 +246,7 @@ export const DishProvider: React.FC<React.PropsWithChildren> = ({
         deleteDish,
         updateDishesWithIngredient,
         calculateNutrition,
+        deleteDishesWithIngredient,
       }}
     >
       {children}
@@ -234,5 +263,6 @@ const{
     deleteDish,
     updateDishesWithIngredient,
     calculateNutrition,
+    deleteDishesWithIngredient,
 } = useContext(DishListContext)
  */

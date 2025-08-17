@@ -99,6 +99,7 @@ export default function CreatableSelector({
           >
             <FlatList
               data={filteredOptions}
+              keyboardShouldPersistTaps="handled" // <-- add this
               renderItem={({ item }) => (
                 <Pressable
                   className="bg-gray-100 h-[35px] mb-1"

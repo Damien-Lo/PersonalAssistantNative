@@ -24,6 +24,7 @@ import {
 import { CalendarContext } from "../state/CalendarContext";
 import NewCalendarEventPage from "./NewCalendarEventPage";
 import EditCalendarEventPage from "./EditCalendarEventPage";
+import MonthView from "../components/MonthView";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 export default function CalendarFullViewPage() {
@@ -67,8 +68,8 @@ export default function CalendarFullViewPage() {
 
   //SUPPORTING VARIABLES
   const navigation = useNavigation<Nav>();
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [daysInWeek, setDaysInWeek] = useState<Date[]>([]);
-  const [monthViewExpanded, setMonthViewExpanded] = useState<boolean>(false);
   const monthLabels = [
     "Jan",
     "Feb",
@@ -85,26 +86,50 @@ export default function CalendarFullViewPage() {
   ];
   const daysOfWeekLabels = ["M", "T", "W", "T", "F", "S", "S"];
 
+  const [expandMonthView, setExpandMonthView] = useState<boolean>(false);
+  const [expandedMonthReference, setExpandedMonthRefernce] = useState<Date>(
+    new Date()
+  );
+
   const [showNewEventOverlay, setShowNewEventOverlay] =
     useState<boolean>(false);
   const CELL_HEIGHT = 100;
   const pxPerHour = CELL_HEIGHT;
   const pxPerMin = pxPerHour / 60;
 
+  const minutesFromMidnight =
+    currentTime.getHours() * 60 + currentTime.getMinutes();
+  const top = (minutesFromMidnight / 60) * pxPerHour;
+
   //===========================
   //         FUNCTIONS
   //==========================
 
-  const testFunc = () => {
-    console.log(selectedDayEvents);
-  };
+  const testFunc = () => {};
 
+  /**
+   * useEffect
+   * Updates the current time (and current time line every minute)
+   */
+  useEffect(() => {
+    const id = setInterval(() => setCurrentTime(new Date()), 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  /**
+   * useEffect
+   * Generates UI Week Day Numbers and loads events when new day is seleceted
+   */
   useEffect(() => {
     setDaysInWeek(generateDaysInWeek(viewedDay));
     setSelectedDayEvents(getEventOfDay(selectedDay));
     console.log(getEventOfDay(selectedDay));
   }, [selectedDay, viewedDay, fullEventList]);
 
+  /**
+   * useEffect
+   * Generates UI event element positions for currentDay's Event
+   */
   useEffect(() => {
     const placeColumns = (group: UIWrappedEvent[]): PlacedUIEvent[] => {
       // when each column becomes free (ms)
@@ -164,6 +189,10 @@ export default function CalendarFullViewPage() {
     setEventGroups(placedGroups);
   }, [selectedDayEvents]);
 
+  /**
+   * shiftWeekForward
+   * Shift the week bar forward a week
+   */
   const shiftWeekForward = () => {
     setViewedDay((prev) => {
       const d = new Date(prev);
@@ -172,6 +201,10 @@ export default function CalendarFullViewPage() {
     });
   };
 
+  /**
+   * shiftWeekBackward
+   * Shift the week bar backward a week
+   */
   const shiftWeekBackward = () => {
     setViewedDay((prev) => {
       const d = new Date(prev);
@@ -187,7 +220,7 @@ export default function CalendarFullViewPage() {
   return (
     <View className="flex-1 bg-white dark:bg-black">
       {/* Header Day Selector*/}
-      <View className="w-full h-[22%] bg-blue-300 p-3 pt-[50px]">
+      <View className="w-full bg-blue-300 p-3 pt-[50px] items-center">
         <View className="flex flex-row items-center w-full h-[40px]">
           <Text className="text-3xl font-bold">
             {monthLabels[viewedDay.getMonth()]}
@@ -264,9 +297,33 @@ export default function CalendarFullViewPage() {
             <Text>Next</Text>
           </Pressable>
         </View>
+
+        {/* Expanded Month View */}
+        <View className="w-full items-center mt-2">
+          {expandMonthView && (
+            <View className="w-full h-[220px]">
+              <MonthView
+                referenceDate={selectedDay} // or `new Date()`
+                selectedDate={selectedDay}
+                onSelectDate={(d) => {
+                  setSelectedDay(d);
+                  // optional: collapse after pick
+                  // setExpandMonthView(false);
+                }}
+              />
+            </View>
+          )}
+
+          <Pressable
+            className="w-[100px] h-[15px] items-center"
+            onPress={() => setExpandMonthView((v) => !v)}
+          >
+            <Text className="text-center"> -- </Text>
+          </Pressable>
+        </View>
       </View>
 
-      <ScrollView className="w-full h-[50px] border relative relative">
+      <ScrollView className="w-full h-[50px] border relative">
         {/* Fixed background time labels */}
         {Array.from({ length: 25 }, (_, i) => i).map((hour) => (
           <View key={hour} style={{ height: CELL_HEIGHT }} className="relative">
@@ -293,7 +350,7 @@ export default function CalendarFullViewPage() {
               const top =
                 (start.getHours() * 60 + start.getMinutes()) * pxPerMin;
               const height = Math.max(
-                2,
+                10,
                 ((end.getTime() - start.getTime()) / 60000) * pxPerMin
               );
 
@@ -319,6 +376,14 @@ export default function CalendarFullViewPage() {
               );
             })
           )}
+        </View>
+        {/* Current Time Line */}
+        <View
+          className="absolute left-12 right-0 flex flex-row items-center justify-center"
+          style={{ top }}
+        >
+          <View className="absolute left-0 w-2 h-2 rounded-full bg-red-500 -translate-x-1/2 top-[-2px]" />
+          <View className="ml-2 h-[2px] bg-red-500 w-full " />
         </View>
       </ScrollView>
 
