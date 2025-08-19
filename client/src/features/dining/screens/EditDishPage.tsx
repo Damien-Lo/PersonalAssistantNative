@@ -17,6 +17,7 @@ import { useContext, useEffect, useState } from "react";
 import { IngredientContext } from "../state/IngredientContext";
 import { Ingredient } from "../../../domain/ingredients/IngredientTypes";
 import { Dish, DishByCategory } from "../../../domain/dishes/DishTypes";
+import { CalendarContext } from "../../calendar/state/CalendarContext";
 
 interface EditDishPageProps {
   passedDish: Dish;
@@ -44,6 +45,22 @@ const EditDishPage: React.FC<EditDishPageProps> = ({
 
   const { fullDishList, setFullDishList, createDish, editDish, deleteDish } =
     useContext(DishContext);
+
+  const {
+    fullEventList,
+    setFullEventList,
+    calendarEventTypes,
+    setCalendarEventTypes,
+    createCalendarEvent,
+    editCalendarEvent,
+    deleteCalendarEvent,
+    formatDateToYYYMMDD,
+    removeIngredientsOfEventFromStock,
+    getStartOfWeek,
+    generateDaysInWeek,
+    getEventOfDay,
+    updateEventsWithDish,
+  } = useContext(CalendarContext);
 
   //STATE VARIABLES
   //Dish Object Variables
@@ -188,6 +205,7 @@ const EditDishPage: React.FC<EditDishPageProps> = ({
     console.log("Saving Dish:", updatedFields);
 
     editDish(passedDish._id, updatedFields);
+    updateEventsWithDish(passedDish._id, updatedFields);
   };
 
   const handleDelete = async () => {

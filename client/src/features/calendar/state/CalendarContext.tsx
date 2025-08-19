@@ -21,7 +21,7 @@ import { createContext, useState, useEffect, useContext } from "react";
 import { DishContext } from "../../dining/state/DishContext";
 import { IngredientContext } from "../../dining/state/IngredientContext";
 import { useAuth } from "../../auth/state/AuthContext";
-import { Dish } from "../../../domain/dishes/DishTypes";
+import { Dish, NewDish } from "../../../domain/dishes/DishTypes";
 import { IngredientListEntry } from "../../../domain/ingredients/IngredientTypes";
 import {
   CalendarEvent,
@@ -52,6 +52,7 @@ interface CalendarContextType {
   wrapForUI: (event: CalendarEvent, isVirtual: boolean) => UIWrappedEvent;
   getEventOfDay: (date: Date) => UIWrappedEvent[];
   normaliseDay: (date: Date) => Date;
+  updateEventsWithDish: (dish_id: string, updatedDish: NewDish) => void;
 }
 
 //=================================================================
@@ -155,6 +156,40 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
     } catch (error) {
       console.error("Failed to edit event:", error);
     }
+  };
+
+  const updateEventsWithDish = (dish_id: string, updatedDish: NewDish) => {
+    // const changedDishes = [];
+    setFullEventList((prev) =>
+      prev.map((event) => {
+        const usesDish = event.dishList.some(
+          (entry) => entry.dishObject._id === dish_id
+        );
+        if (!usesDish) return event;
+
+        const newDishList = event.dishList.map((entry) =>
+          entry.dishObject._id === dish_id
+            ? {
+                ...entry,
+                dishObject: {
+                  ...updatedDish,
+                  _id: dish_id,
+                },
+              }
+            : entry
+        );
+
+        const newEvent = {
+          ...event,
+          dishList: newDishList,
+        };
+
+        //Update Backend Too
+        editCalendarEvent(event._id, newEvent);
+        // changedDishes.push(newDish);
+        return newEvent;
+      })
+    );
   };
 
   /**
@@ -346,6 +381,7 @@ export const CalendarProvider: React.FC<React.PropsWithChildren> = ({
         generateDaysInWeek,
         getEventOfDay,
         normaliseDay,
+        updateEventsWithDish,
       }}
     >
       {children}
@@ -367,5 +403,6 @@ const{
     getStartOfWeek,
     generateDaysInWeek,
     getEventOfDay,
+    updateEventsWithDish
 } = useContext(CalendarContext)
 */

@@ -63,7 +63,7 @@ export default function MainPageSelector({
                   setMenuVisible(false);
                 }}
               >
-                <Text>C</Text>
+                <Text>📅</Text>
               </Pressable>
 
               <Pressable
